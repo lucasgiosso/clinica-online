@@ -407,7 +407,9 @@ onResize(event: any){
               this.cargarUsuariosPendientes();
               this.obtenerUsuarios();
               this.formReg.reset();
-              this.router.navigate(['/home/config']);
+              this.router.navigate(['/home/seccion-usuarios']).then(() => {
+                window.location.reload();
+              });
             }
           });
           
