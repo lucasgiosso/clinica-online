@@ -3,12 +3,14 @@
 </div>
 
 <div align="center">
-  <img src="https://firebasestorage.googleapis.com/v0/b/clinica-2dd2c.appspot.com/o/Logo.png?alt=media&token=ffc241b7-bb89-493e-bc80-057a828345df" alt="Clínica Online Logo">
+  <img src="https://firebasestorage.googleapis.com/v0/b/clinica-2dd2c.appspot.com/o/Logo.png?alt=media&token=ffc241b7-bb89-493e-bc80-057a828345df" alt="Clínica Online Logo" >
 </div>
 
 ## Descripción
 
 Clínica Online es una aplicación web diseñada para gestionar citas médicas entre pacientes y especialistas. La aplicación permite a los pacientes solicitar turnos, ver sus turnos programados, ver reseñas y completar encuestas de satisfacción después de sus consultas. Los especialistas pueden gestionar su disponibilidad y los turnos asignados. También el administrador tiene ingresos especiales para poder ver y gestionar los turnos de la clínica.
+
+### Página web: https://clinica-2dd2c.web.app/
 
 ## Características
 
@@ -20,6 +22,7 @@ Clínica Online es una aplicación web diseñada para gestionar citas médicas e
 - [**Calificación y Reseñas**](#calificación-y-reseñas): Los pacientes pueden calificar la atención recibida y dejar reseñas.
 - [**Panel de Administración**](#panel-de-administración): Un administrador puede gestionar usuarios y visualizar turnos.
 - [**Gestión de Disponibilidad**](#gestión-de-disponibilidad): Los especialistas pueden ingresar en su perfil para definir y modificar su disponibilidad.
+
 
 
 ## Capturas de Pantalla
