@@ -14,12 +14,12 @@ Clínica Online es una aplicación web diseñada para gestionar citas médicas e
 
 - [**Página de bienvenida**](#pagina-de-bienvenida): Logo con redirección al registro e inicio de sesión.
 
-- **Gestión de Usuarios**: Registro e inicio de sesión para pacientes y especialistas.
-- **Solicitar Turnos**: Los pacientes pueden solicitar turnos con especialistas en diferentes especialidades.
-- **Calificación y Reseñas**: Los pacientes pueden calificar la atención recibida y dejar reseñas.
-- **Panel de Administración**: Un administrador puede gestionar usuarios y visualizar turnos.
+- [**Gestión de Usuarios**](#gestión-de-usuarios): Registro e inicio de sesión para pacientes y especialistas.
+- [**Solicitar Turnos**](#solicitar-turnos): Los pacientes pueden solicitar turnos con especialistas en diferentes especialidades.
+- [**Calificación y Reseñas**](#calificación-y-reseñas): Los pacientes pueden calificar la atención recibida y dejar reseñas.
+- [**Panel de Administración**](#panel-de-administración): Un administrador puede gestionar usuarios y visualizar turnos.
 
-- **Gestión de Disponibilidad**: Los especialistas pueden definir y modificar su disponibilidad.
+- [**Gestión de Disponibilidad**](#gestión-de-disponibilidad): Los especialistas pueden definir y modificar su disponibilidad.
 
 
 ## Capturas de Pantalla
@@ -30,7 +30,7 @@ Clínica Online es una aplicación web diseñada para gestionar citas médicas e
 
 ![Página de Bienvenida](https://firebasestorage.googleapis.com/v0/b/clinica-2dd2c.appspot.com/o/bienvenida.png?alt=media&token=fc408b53-f279-4961-b693-2c93728ac4b3)
 
-<div align="center">
+<div id="gestión-de-usuarios" align="center">
   <h1>Gestión de usuarios</h1>
 </div>
 
@@ -56,7 +56,7 @@ Clínica Online es una aplicación web diseñada para gestionar citas médicas e
 
 ![Página de Inicio](https://firebasestorage.googleapis.com/v0/b/clinica-2dd2c.appspot.com/o/home1.png?alt=media&token=4fdfa78b-f30c-4246-b3dd-c73cd3a0b537)
 
-<div align="center">
+<div id="solicitar-turnos" align="center">
   <h1>Solicitar turno</h1>
 </div>
 
@@ -71,7 +71,7 @@ Clínica Online es una aplicación web diseñada para gestionar citas médicas e
 
 ![Ver Turnos del Paciente](https://firebasestorage.googleapis.com/v0/b/clinica-2dd2c.appspot.com/o/misturnos.png?alt=media&token=0f19225e-4611-45c0-9b9c-31c2f281e836)
 
-<div align="center">
+<div id="calificación-y-reseñas" align="center">
   <h1>Encuesta de Satisfacción, reseña y calificación</h1>
 </div>
 
@@ -83,7 +83,7 @@ Clínica Online es una aplicación web diseñada para gestionar citas médicas e
 
 ![Ver Calificación](https://firebasestorage.googleapis.com/v0/b/clinica-2dd2c.appspot.com/o/verCalif.png?alt=media&token=32afac08-437d-49c1-9b2f-60739af77f96)
 
-<div align="center">
+<div id="panel-de-administración" align="center">
   <h1>Panel de Administración(sección usuarios, creación y turnos)</h1>
 </div>
 
@@ -94,3 +94,8 @@ Clínica Online es una aplicación web diseñada para gestionar citas médicas e
 ![Turnos](https://firebasestorage.googleapis.com/v0/b/clinica-2dd2c.appspot.com/o/turnos.png?alt=media&token=c21d2a1b-ea7c-4cef-88dc-90dff2b23e7a)
 
 
+<div id="gestión-de-disponibilidad" align="center">
+  <h1>Gestión de Disponibilidad</h1>
+</div>
+
+![Disponibilidad](https://firebasestorage.googleapis.com/v0/b/clinica-2dd2c.appspot.com/o/miPerfil.png?alt=media&token=32f28d64-3a36-4488-84df-ab51fa481742)

@@ -113,8 +113,8 @@ export class RegisterComponent {
       recaptcha: ['', Validators.required]
     });
 
-    this.sitekey = "6LdyXPApAAAAALSAmf8NwgdYpEsRkXOg-r8nqMBk"; // QA
-    //this.sitekey = "6LeFXPApAAAAAFW3JDnfsZ_J_f4e6fRn7cmPQb7f"; // PROD
+    //this.sitekey = "6LdyXPApAAAAALSAmf8NwgdYpEsRkXOg-r8nqMBk"; // QA
+    this.sitekey = "6LeFXPApAAAAAFW3JDnfsZ_J_f4e6fRn7cmPQb7f"; // PROD
 
     setTimeout(() => {
     this.showLoading = false;
