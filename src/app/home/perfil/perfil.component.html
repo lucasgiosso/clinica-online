@@ -1,0 +1,79 @@
+
+<body>
+  <app-loading *ngIf="showLoading" class="centered-loading"></app-loading>
+
+  <div class="navbar-custom">
+    <a class="user-color" (click)="toggleDropdown()" *ngIf="currentUser$ | async as user" >
+      <img *ngIf="user.photoURL" src="{{user.photoURL}}" alt="Foto de perfil de usuario" class="user-photo">
+      <img *ngIf="!user.photoURL" src="https://firebasestorage.googleapis.com/v0/b/tp-sala-de-juegos-diazgiossol.appspot.com/o/guest.webp?alt=media&token=69e91e4a-832d-4439-ab69-a30e2c8d80ee"  class="user-photo">
+      {{ user.displayName?user.displayName : user.email }} 
+    </a>
+    <div class="dropdown-content" *ngIf="isDropdownOpen">
+      <button class="logout-button" *ngIf="showLogoutButton" (click)="logout()">
+        <i class="fa solid fa-power-off"></i> Cerrar Sesión
+      </button>
+    </div>
+  </div>
+  
+
+    <div class="user-container">
+  
+    <div class="user-profile" *ngIf="usuarioLogueado">
+      <label class="perfil">Mi perfil</label>
+      <div class="user-info">
+          <h2>{{ usuarioLogueado.nombre }} {{ usuarioLogueado.apellido }}</h2>
+          <p>Edad: {{ usuarioLogueado.edad }}</p>
+          <p>DNI: {{ usuarioLogueado.dni }}</p>
+          <p>Mail: {{ usuarioLogueado.mail }}</p>
+  
+          <ng-container *ngIf="usuarioLogueado.role === 'admin'">
+          <p>Imagen de perfil:</p>
+          <img [src]="usuarioLogueado.imagenPerfil" alt="Imagen de perfil">
+        </ng-container>
+          
+          <ng-container *ngIf="usuarioLogueado.role === 'paciente'">
+  
+          <p>Obra Social: {{ usuarioLogueado.obrasocial }}</p>
+  
+          <p>Imagen de perfil 1:</p>
+          <img [src]="usuarioLogueado.imagenPerfil1" alt="Imagen de perfil1">
+  
+          <p>Imagen de perfil 2:</p>
+          <img [src]="usuarioLogueado.imagenPerfil2" alt="Imagen de perfil2">
+        </ng-container>
+          
+          <ng-container *ngIf="usuarioLogueado.role === 'especialista'">
+  
+            <p>Especialidad: {{ usuarioLogueado.especialidad === 'otra' ? usuarioLogueado.otraEspecialidad : usuarioLogueado.especialidad }}</p>
+  
+          <ng-container *ngIf="usuarioLogueado.especialidad.trim().length === 0">
+            <p>Otra Especialidad: {{ usuarioLogueado.otraEspecialidad }}</p>
+          </ng-container>
+  
+          <p>Imagen de perfil:</p>
+          <img [src]="usuarioLogueado.imagenPerfil" alt="Imagen de perfil">
+        </ng-container>
+      </div>
+  
+    </div>
+  
+    <div class="user-profile" *ngIf="usuarioLogueado">
+      <div class="user-actions">
+        <ng-container *ngIf="usuarioLogueado.role === 'especialista'">
+          <app-especialista-dispo></app-especialista-dispo>
+        </ng-container>
+      </div>
+    </div>
+  
+  </div>
+  </body>
+  
+  <div class="center-button">
+    <input type="button" [value]="btnVolver" class="btn-success" (click)="onClickHome($event)" />
+  </div>
+  <footer class="site-footer">
+    <div class="container">
+      <p>&copy; 2024 Clinica Online. Todos los derechos reservados.</p>
+    </div>
+  </footer>
+  

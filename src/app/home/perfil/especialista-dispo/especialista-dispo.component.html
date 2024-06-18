@@ -1,0 +1,86 @@
+<form [formGroup]="disponibilidadForm" (ngSubmit)="guardarDisponibilidad()">
+  
+    <div class="centered-content">
+      <h3>Disponibilidad horaria</h3>
+      <label for="especialidad">Especialidad:</label>
+      <select id="especialidad" name="especialidad" formControlName="especialidad">
+          <option value="Ginecologia">Ginecologia</option>
+          <option value="Traumatologia">Traumatologia</option>
+          <option value="Kinesiologia">Kinesiologia</option>
+          <option value="Nutricionista">Nutricionista</option>
+      </select>
+    </div>
+    
+    <div class="centered-content">
+      <label>Días:</label>
+      <div class="dias-container">
+      <div *ngFor="let dia of ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sabado']">
+        <input type="checkbox" [id]="dia" [value]="dia" [checked]="isDiaSeleccionado(dia)" required (change)="toggleDia(dia)">
+        <label [for]="dia">{{ dia }}</label>
+      </div>
+    </div>
+  </div>
+    
+      <div class="centered-content">
+        <div class="dias-container">
+        <label for="horaInicio">Hora de inicio:</label>
+        <select id="horaInicio" formControlName="horaInicio" required >
+          <option *ngFor="let hora of horasDisponibles" [value]="hora">{{ hora }}</option>
+        </select>
+      
+        <label for="horaFin">Hora de fin:</label>
+        <select id="horaFin" formControlName="horaFin" required >
+          <option *ngFor="let hora of horasDisponibles" [value]="hora">{{ hora }}</option>
+        </select>
+      </div>
+      <input type="hidden" formControlName="id" />
+    </div>
+      <button type="submit" *ngIf="mostrarBotonGuardar">Guardar Disponibilidad</button>
+  </form>
+  
+  <div class="centered-content">
+    <div *ngIf="(especialistaService.disponibilidad$ | async) as disponibilidad; else loading">
+      <h3>Horarios Disponibles</h3>
+      <ul>
+        <li *ngFor="let horario of disponibilidad">
+          {{ getDiasString(horario.dias) }} - {{ horario.horaInicio }} a {{ horario.horaFin }}
+          <button 
+          [class.active]="editandoHorario === horario" 
+          (click)="modificarHorario(horario)" 
+          >Modificar</button>
+
+          <button 
+          type="button" class="botonCancelar"
+          *ngIf="editandoHorario === horario" 
+          (click)="cancelarModificacion()">Cancelar</button>
+        </li>
+      </ul>
+    </div>
+    <ng-template #loading>
+      <p>Cargando disponibilidad...</p>
+    </ng-template>
+  </div>
+  <!-- <table>
+    <thead>
+      <tr>
+        <th>Día</th>
+        <th>Hora de inicio</th>
+        <th>Hora de fin</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      <ng-container *ngIf="(especialistaService.disponibilidad$ | async) as disponibilidad">
+        <tr *ngFor="let horario of disponibilidad">
+          <td>{{ getDiasString(horario.dias) }}</td>
+          <td>{{ horario.horaInicio }}</td>
+          <td>{{ horario.horaFin }}</td>
+          <td>
+            <button (click)="modificarHorario(horario)">Modificar</button>
+            <button *ngIf="editandoHorario" (click)="cancelarModificacion()">Cancelar</button>
+          </td>
+        </tr>
+      </ng-container>
+    </tbody>
+  </table> -->
+  

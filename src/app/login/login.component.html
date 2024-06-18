@@ -1,0 +1,89 @@
+<body>
+
+  <app-loading *ngIf="showLoading" class="centered-loading"></app-loading>
+  <div class="contenido1">
+
+    <div class="login-container">
+      <img src="assets/logo.png" alt="Logo de la Clínica">
+      <h2>Iniciar sesión</h2>
+      <form [formGroup]="formLogin" (ngSubmit)="onSubmit()">
+
+        <div class="form-group">
+          <label for="email">Nombre de usuario:</label>
+          <input type="text" id="email" formControlName="email" placeholder="Email" required>
+        </div>
+
+        <div class="form-group">
+          <label for="clave">Contraseña:</label>
+          <input type="password" id="password" formControlName="password" placeholder="Contraseña" required>
+        </div>
+
+        <div class="button-container">
+          <button type="submit">Iniciar sesión</button>
+        </div>
+        <button type="button" (click)="onClickWel($event)">Volver a inicio</button>
+
+        <div class="register">
+          <p>No tenes una cuenta<span class="icon icon--info">?</span><a (click)="onRegister()"
+              style="cursor: pointer;">Registrate !</a></p>
+        </div>
+      </form>
+
+      <div class="error">
+        <p>{{ errorMensaje }}</p>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="container">
+    <!-- <div class="columna"> -->
+    <div class="item">
+      <button type="button" class="btnDerecha1" (click)="loginLoadAdmin()">
+        <img [src]="fotoPerfilUrls[defaultEmailAdmin]" class="fotoPerfil" alt="Foto de perfil">
+      </button>
+    </div>
+
+    <div class="spacer"></div>
+
+    <div class="item">
+      <button type="button" class="btnDerecha1" (click)="loginLoadEspecialista1()">
+        <img [src]="fotoPerfilUrls[defaultEmailEspecialista1]" class="fotoPerfil" alt="Foto de perfil">
+      </button>
+    </div>
+
+    <div class="spacer"></div>
+
+    <div class="item">
+      <button type="button" class="btnDerecha1" (click)="loginLoadEspecialista2()">
+        <img [src]="fotoPerfilUrls[defaultEmailEspecialista2]" class="fotoPerfil" alt="Foto de perfil">
+      </button>
+    </div>
+    <!-- </div> -->
+    <div class="spacer"></div>
+    <!-- <div class="columna"> -->
+    <div class="item">
+      <button type="button" class="btnDerecha1" (click)="loginLoadPaciente1()">
+        <img [src]="fotoPerfilUrls[defaultEmailPaciente1]" class="fotoPerfil" alt="Foto de perfil">
+      </button>
+    </div>
+
+    <div class="spacer"></div>
+
+    <div class="item">
+      <button type="button" class="btnDerecha1" (click)="loginLoadPaciente2()">
+        <img [src]="fotoPerfilUrls[defaultEmailPaciente2]" class="fotoPerfil" alt="Foto de perfil">
+      </button>
+    </div>
+
+    <div class="spacer"></div>
+
+    <div class="item">
+      <button type="button" class="btnDerecha1" (click)="loginLoadPaciente3()">
+        <img [src]="fotoPerfilUrls[defaultEmailPaciente3]" class="fotoPerfil" alt="Foto de perfil">
+      </button>
+    </div>
+    <!-- </div> -->
+  </div>
+
+</body>

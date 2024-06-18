@@ -1,0 +1,92 @@
+
+
+<body>
+  <app-loading *ngIf="showLoading" class="centered-loading"></app-loading>
+  
+          <div id="topbar" class="d-flex align-items-center fixed-top">
+            <div class="container d-flex align-items-center justify-content-center justify-content-md-between">
+              <div class="align-items-center d-none d-md-flex">
+              </div>
+              <i class="bi bi-clock"></i> Horario de atencion: Lunes - Viernes, 8:00 to 19:00 hs / Sabados, 8:00 to 14:00 hs
+            </div>
+          </div>
+
+          <header id="header" class="fixed-top">
+          <div class="container d-flex align-items-center">
+
+            <a href="index.html" class="logo me-auto"><img src="assets/logo.png" alt=""></a>
+            <!-- Uncomment below if you prefer to use an image logo -->
+            <!-- <h1 class="logo me-auto"><a href="index.html">Medicio</a></h1> -->
+      
+            <nav id="navbar" class="navbar order-last order-lg-0">
+              <ul>
+                  <li><a class="nav-link scrollto" (click)="perfil()">Mi perfil</a></li>
+                  <li><a class="nav-link scrollto" (click)="misTurnos()">Mis turnos</a></li>
+                  <li><a class="nav-link scrollto" (click)="turnos()">Turnos</a></li>
+                  <li><a class="nav-link scrollto" (click)="solicitarTurno()">Solicitar turnos</a></li>
+                  <!-- <li><a class="nav-link scrollto" >Gráficos y estadisticas</a></li> -->
+                  <li><a class="nav-link scrollto "(click)="seccionUsuarios()">Seccion usuarios</a></li>
+                <li><a>
+                  <!-- <div class="navbar-custom"> -->
+                  <a class="user-color" (click)="toggleDropdown()" *ngIf="currentUser$ | async as user" >
+
+                    <div *ngIf="!showLoading && user">                  
+                    <img *ngIf="user.photoURL" src="{{user.photoURL}}" alt="Foto de perfil de usuario" class="user-photo">
+                    <img *ngIf="!user.photoURL" src="https://firebasestorage.googleapis.com/v0/b/tp-sala-de-juegos-diazgiossol.appspot.com/o/guest.webp?alt=media&token=69e91e4a-832d-4439-ab69-a30e2c8d80ee"  class="user-photo">
+                    {{ user.displayName?user.displayName : user.email }} 
+                  </div>
+
+                  </a>
+                  
+                  <div class="dropdown-content" *ngIf="isDropdownOpen">
+                    <button class="logout-button" *ngIf="showLogoutButton" (click)="logout()">
+                      <i class="fa solid fa-power-off"></i> Cerrar Sesión
+                    </button>
+                  </div>
+              </a>
+              </li>
+              </ul>
+              <i class="bi bi-list mobile-nav-toggle"></i>
+            </nav>
+      
+            <!-- <a href="#appointment" class="appointment-btn scrollto"><span class="d-none d-md-inline">Make an</span> Appointment</a> -->
+      
+          </div>
+        </header>
+
+        <section id="hero">
+          <div id="heroCarousel" data-bs-interval="5000" class="carousel slide carousel-fade" data-bs-ride="carousel">
+      
+            <ol class="carousel-indicators" id="hero-carousel-indicators"></ol>
+      
+            <div class="carousel-inner" role="listbox">
+      
+              <div class="carousel-item active" style="background-image: url(assets/slide/slide-1.jpg);">
+                <div class="container">
+                  <h2>Bienvenido a <span>Clinica Online</span></h2>
+                  <p>Aqui podras gestionar tus turnos, tu perfil y actualizar tus datos.</p>
+                  <!-- <a href="#about" class="btn-get-started scrollto">Read More</a> -->
+                </div>
+              </div>      
+            </div>
+      
+            <!-- <a class="carousel-control-prev" href="#heroCarousel" role="button" data-bs-slide="prev">
+              <span class="carousel-control-prev-icon bi bi-chevron-left" aria-hidden="true"></span>
+            </a>
+      
+            <a class="carousel-control-next" href="#heroCarousel" role="button" data-bs-slide="next">
+              <span class="carousel-control-next-icon bi bi-chevron-right" aria-hidden="true"></span>
+            </a> -->
+      
+          </div>
+        </section>
+
+      </body>
+
+  
+    <footer class="site-footer">
+      <div class="container">
+        <p>&copy; 2024 Clinica Online. Todos los derechos reservados.</p>
+      </div>
+    </footer>
+  

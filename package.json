@@ -6,7 +6,8 @@
     "start": "ng serve",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "deploy": "ng build && firebase deploy --only hosting"
   },
   "private": true,
   "dependencies": {
@@ -14,12 +15,25 @@
     "@angular/common": "^17.3.0",
     "@angular/compiler": "^17.3.0",
     "@angular/core": "^17.3.0",
+    "@angular/fire": "^17.1.0",
     "@angular/forms": "^17.3.0",
     "@angular/platform-browser": "^17.3.0",
     "@angular/platform-browser-dynamic": "^17.3.0",
     "@angular/router": "^17.3.0",
+    "@fortawesome/fontawesome-free": "^6.5.2",
+    "@types/date-fns": "^2.6.0",
+    "animate.css": "^4.1.1",
+    "bootstrap": "^5.3.3",
+    "bootstrap-icons": "^1.11.3",
+    "date-fns": "^3.6.0",
+    "firebase": "^10.12.2",
+    "ng-recaptcha": "^13.2.1",
+    "ngx-captcha": "^13.0.0",
     "rxjs": "~7.8.0",
+    "sweetalert2": "^11.11.0",
+    "swiper": "^11.1.4",
     "tslib": "^2.3.0",
+    "uuid": "^10.0.0",
     "zone.js": "~0.14.3"
   },
   "devDependencies": {
