@@ -2,20 +2,26 @@ import { Injectable } from '@angular/core';
 import { Firestore, collection, addDoc, getDocs, query, where, CollectionReference, DocumentData, doc, getDoc, QuerySnapshot, DocumentReference, collectionData, setDoc, docData, updateDoc, collectionGroup, Timestamp, DocumentSnapshot } from '@angular/fire/firestore';
 import { Observable, catchError, combineLatest, forkJoin, from, map, mergeMap, of, switchMap } from 'rxjs';
 import { PacienteService } from '../services/paciente.service';
+import { EspecialistaService, Horario } from './especialista.service';
+
 
 export interface Turno {
   id: string; 
   especialidad: string;
-  especialista: string;
-  fechaHora: Date;
-  horario: string;
-  estado: 'pendiente' | 'cancelado' | 'realizado';
-  especialistas: {
+  especialistaId: string;
+  fechaHora: Timestamp | Date;
+  fecha?: Date;
+  horario?: string;
+  horaInicio?: string;
+  horaFin?: string;
+  estado: 'pendiente' | 'cancelado' | 'realizado' | 'aceptado' | 'rechazado';
+  ocupado?: boolean;
+  paciente: {
     mail: string;
     nombre: string;
     apellido: string;
   }
-  paciente: {
+  especialista: {
     mail: string;
     nombre: string;
     apellido: string;
@@ -28,8 +34,36 @@ export interface Turno {
     tiempoEspera: number;
     satisfaccionGeneral: number;
   };
+  motivoCancelacion?: string;
+  motivoRechazo?: string;
   calificacionCompletada?: boolean;
   comentarioCalificacion?: string;
+}
+
+export interface TurnoDisponible {
+  id: string;
+  dias: string[];
+  horaInicio: string;
+  horaFin: string;
+  ocupado?: boolean; 
+  
+}
+
+export interface Paciente {
+  email: string;
+  nombre: string;
+  apellido: string;
+}
+
+export interface HistoriaClinica {
+  id?: string;
+  altura: number;
+  peso: number;
+  temperatura: number;
+  presion: string;
+  datosDinamicos?: Array<{ clave: string, valor: string }>;
+  fecha: Date;
+  especialistaId: string;
 }
 
 
@@ -41,10 +75,9 @@ export class TurnosService {
   private turnos: any[] = [];
   private turnosCollection: CollectionReference<DocumentData>;
 
-  constructor(private firestore: Firestore, private pacienteService: PacienteService) {
+  constructor(private firestore: Firestore, private pacienteService: PacienteService, private especialistaService: EspecialistaService) {
     this.turnosCollection = collection(this.firestore, 'turnos');
    }
-
 
 
   obtenerTurnosPorPaciente(pacienteMail: string): Observable<any[]> {
@@ -63,38 +96,19 @@ export class TurnosService {
     );
   }
 
-  obtenerTurnosPorEspecialista(especialistaMail: string): Observable<Turno[]> {
-    console.log('Iniciando consulta para el especialista:', especialistaMail);
-    const pacientesCollection = collection(this.firestore, 'turnos');
-    return from(getDocs(pacientesCollection)).pipe(
-      map(snapshot => snapshot.docs),
-      switchMap(patientDocs => {
-        const turnosObservables = patientDocs.map(patientDoc => {
-          const subCollectionRef = collection(this.firestore, `turnos/${patientDoc.id}/turnos`);
-          return from(getDocs(subCollectionRef)).pipe(
-            map(subCollectionSnapshot => {
-              const turnos: Turno[] = [];
-              subCollectionSnapshot.forEach(turnoDoc => {
-                const turnoData = turnoDoc.data() as Turno;
-                turnoData.id = turnoDoc.id;
-                if (turnoData.fechaHora instanceof Timestamp) {
-                  turnoData.fechaHora = turnoData.fechaHora.toDate();
-                }
-                if (turnoData.especialistas?.mail === especialistaMail) {
-                  turnos.push(turnoData);
-                }
-              });
-              return turnos;
-            })
-          );
-        });
-        return forkJoin(turnosObservables).pipe(
-          map(turnosArrays => turnosArrays.flat())
-        );
+  obtenerTurnoPorId(turnoId: string): Observable<Turno> {
+    const turnoDocRef = doc(this.firestore, `turnos/${turnoId}`);
+    return from(getDoc(turnoDocRef)).pipe(
+      map((turnoDoc: DocumentSnapshot) => {
+        const turnoData = turnoDoc.data() as Turno;
+        return {
+          ...turnoData,
+          id: turnoDoc.id
+        };
       }),
       catchError(error => {
-        console.error('Error al obtener turnos:', error);
-        return of([]);
+        console.error('Error al obtener el turno por ID:', error);
+        throw error; // Lanza el error para ser manejado por el componente
       })
     );
   }
@@ -137,6 +151,8 @@ export class TurnosService {
     );
   }
 
+  
+
   async obtenerTurnos(): Promise<any[]> {
     try {
       const turnosQuery = query(
@@ -163,10 +179,9 @@ export class TurnosService {
   }
 
   async solicitarTurno(
-    
     especialidad: string,
-    especialista: string,
-    fechaHora: Date,
+    especialistaId: string,
+    fecha: Date,
     horaInicio: string,
     horaFin: string,
     pacienteMail: string,
@@ -175,69 +190,102 @@ export class TurnosService {
     especialistaMail: string,
     especialistaNombre: string,
     especialistaApellido: string
-  ): Promise<Turno> {
-
-    try {
-
-      const nuevoTurno: Turno = {
-        id: '',
-        paciente: {
-          mail: pacienteMail.toLocaleLowerCase(),
-          nombre: pacienteNombre,
-          apellido: pacienteApellido,
-        },
-        especialistas: {
-          mail: especialistaMail.toLocaleLowerCase(),
-          nombre: especialistaNombre,
-          apellido: especialistaApellido,
-        },
-        especialidad,
-        especialista,
-        fechaHora,
-        horario: `${horaInicio} - ${horaFin}`,
-        estado: 'pendiente',
-      };
+  ): Promise<void> {
+    const nuevoTurno: Turno = {
+      id: '',
+      paciente: {
+        mail: pacienteMail.toLocaleLowerCase(),
+        nombre: pacienteNombre,
+        apellido: pacienteApellido,
+      },
+      especialista: {
+        mail: especialistaMail.toLocaleLowerCase(),
+        nombre: especialistaNombre,
+        apellido: especialistaApellido,
+      },
+      especialidad,
+      especialistaId,
+      fechaHora: fecha,
+      horaInicio,
+      horaFin,
+      estado: 'pendiente',
+      ocupado: false,
+    };
   
-      const turnosCollectionRef = collection(this.firestore, `turnos/${pacienteMail.toLocaleLowerCase()}/turnos`);
-      const docRef = await addDoc(turnosCollectionRef, nuevoTurno);
-
-      // Actualizar el documento con su ID generado
-      await updateDoc(docRef, { id: docRef.id });
-      nuevoTurno.id = docRef.id;
-
-      return nuevoTurno;
-
-    } catch (error) {
-      console.error('Error al registrar el turno:', error);
-      throw new Error('Error al registrar el turno en Firestore.');
-    }
+    const docRef = await addDoc(this.turnosCollection, nuevoTurno);
+    await updateDoc(docRef, { id: docRef.id });
   }
 
-  async verificarDisponibilidad(
-    especialista: string,
-    fecha: Date,
-    horario: string
-  ): Promise<boolean> {
-    try {
-      const disponibilidadQuery = query(
-        this.turnosCollection,
-        where('especialista', '==', especialista),
-        where('fecha', '==', fecha),
-        where('horario', '==', horario)
-      );
-
-      const disponibilidades = await getDocs(disponibilidadQuery);
-
-      return disponibilidades.empty;
-    } catch (error) {
-      console.error('Error al verificar la disponibilidad:', error);
-      throw new Error('Error al verificar la disponibilidad en Firestore.');
-    }
+  obtenerTurnosPorUsuario(userEmail: string, userRole: string): Observable<Turno[]> {
+    const field = userRole === 'paciente' ? 'paciente.mail' : 'especialista.mail';
+    console.log(`Querying turnos for field: ${field} with userEmail: ${userEmail}`);
+    
+    const q = query(this.turnosCollection, where(field, '==', userEmail));
+    return from(getDocs(q)).pipe(
+      map(snapshot => {
+        console.log(`Found ${snapshot.size} turnos`);
+        return snapshot.docs.map(doc => {
+          const data = doc.data() as Turno;
+          if (data.fechaHora instanceof Timestamp) {
+            data.fechaHora = data.fechaHora.toDate();
+          }
+          return data;
+        });
+      }),
+      catchError(error => {
+        console.error('Error al obtener turnos:', error);
+        return of([]);
+      })
+    );
   }
 
-  cancelarTurno(turnoId: string, pacienteMail: string, motivo: string): Promise<void> {
-    const turnoDocRef = doc(this.firestore, `turnos/${pacienteMail.toLocaleLowerCase()}/turnos/${turnoId}`);
+  async actualizarEstadoTurno(turnoId: string, estado: string): Promise<void> {
+    const turnoDocRef = doc(this.firestore, `turnos/${turnoId}`);
+    return updateDoc(turnoDocRef, { estado: estado, ocupado: estado === 'aceptado' });
+  }
+
+  aceptarTurno(turnoId: string): Promise<void> {
+    const turnoDocRef = doc(this.firestore, `turnos/${turnoId}`);
+    console.log('Aceptando turno con ID:', turnoId);
+    return updateDoc(turnoDocRef, { estado: 'aceptado', ocupado: true });
+  }
+
+  cancelarTurno(turnoId: string, motivo: string): Promise<void> {
+    const turnoDocRef = doc(this.firestore, `turnos/${turnoId}`);
     return updateDoc(turnoDocRef, { estado: 'cancelado', motivoCancelacion: motivo });
+  }
+
+  rechazarTurno(turnoId: string, motivo: string): Promise<void> {
+    const turnoDocRef = doc(this.firestore, `turnos/${turnoId}`);
+    return updateDoc(turnoDocRef, { estado: 'rechazado', motivoRechazo: motivo });
+  }
+
+  finalizarTurno(turnoId: string, comentario: string): Promise<void> {
+
+    const turnoDocRef = doc(this.firestore, `turnos/${turnoId}`);
+    return updateDoc(turnoDocRef, { estado: 'realizado', comentario  });
+
+  }
+
+  cargarHistoriaClinica(turnoId: string, comentario: string): Promise<void> {
+
+    const turnoDocRef = doc(this.firestore, `turnos/${turnoId}`);
+    return updateDoc(turnoDocRef, { estado: 'realizado', comentario  });
+
+  }
+
+  verificarDisponibilidad(especialistaId: string, fecha: Date, horaInicio: string, horaFin: string): Observable<boolean> {
+    const turnosRef = collection(this.firestore, 'turnos');
+    const q = query(turnosRef, 
+      where('especialistaId', '==', especialistaId), 
+      where('fechaHora', '==', Timestamp.fromDate(fecha)), 
+      where('horaInicio', '==', horaInicio),
+      where('horaFin', '==', horaFin),
+      where('estado', '==', 'aceptado'),
+      where('ocupado', '==', 'true')
+    );
+  
+    return from(getDocs(q).then(snapshot => snapshot.empty));
   }
 
   cancelarTurnoComoAdmin(turnoId: string, motivo: string): Promise<void> {
@@ -255,8 +303,8 @@ export class TurnosService {
     });
   }
 
-  obtenerResena(turnoId: string, pacienteMail: string): Observable<string> {
-    const turnoDocRef = doc(this.firestore, `turnos/${pacienteMail.toLocaleLowerCase()}/turnos/${turnoId}`);
+  obtenerResena(turnoId: string): Observable<string> {
+    const turnoDocRef = doc(this.firestore, `turnos/${turnoId}`);
     return from(getDoc(turnoDocRef)).pipe(
       map((turnoDoc: DocumentSnapshot<DocumentData>) => {
         const turnoData = turnoDoc.data() as Turno;
@@ -269,104 +317,134 @@ export class TurnosService {
     );
   }
 
-  completarEncuesta(turnoId: string, pacienteMail: string, encuesta: any): Promise<void> {
-    const turnoDocRef = doc(this.firestore, `turnos/${pacienteMail.toLocaleLowerCase()}/turnos/${turnoId}`);
+  completarEncuesta(turnoId: string, encuesta: any): Promise<void> {
+    const turnoDocRef = doc(this.firestore, `turnos/${turnoId}`);
     return updateDoc(turnoDocRef, {
       encuesta,
       encuestaCompletada: true
     });
   }
 
-  calificarAtencion(turnoId: string, pacienteMail: string, comentarioCalificacion: string): Promise<void> {
-    const turnoDocRef = doc(this.firestore, `turnos/${pacienteMail.toLocaleLowerCase()}/turnos/${turnoId}`);
+  calificarAtencion(turnoId: string, comentarioCalificacion: string): Promise<void> {
+    const turnoDocRef = doc(this.firestore, `turnos/${turnoId}`);
     return updateDoc(turnoDocRef, { comentarioCalificacion, calificacionCompletada: true });
   }
 
-  async obtenerTurnosDisponiblesPorEspecialistaYFecha(especialista: string, fecha: Date): Promise<string[]> {
-    try {
-      const turnosQuery = query(
-        this.turnosCollection,
-        where('especialista', '==', especialista),
-        where('fecha', '==', fecha),
-        where('estado', '==', 'pendiente')
-      );
+  // async obtenerTurnosDisponiblesPorEspecialistaYFecha(especialista: string, fecha: Date): Promise<string[]> {
+  //   try {
+  //     const turnosQuery = query(
+  //       this.turnosCollection,
+  //       where('especialista', '==', especialista),
+  //       where('fecha', '==', fecha),
+  //       where('estado', '==', 'pendiente')
+  //     );
   
-      const querySnapshot: QuerySnapshot<any> = await getDocs(turnosQuery);
+  //     const querySnapshot: QuerySnapshot<any> = await getDocs(turnosQuery);
   
-      const turnosDisponibles: string[] = [];
-      querySnapshot.forEach((doc) => {
-        const turno = doc.data() as Turno;
-        turnosDisponibles.push(turno.horario);
+  //     const turnosDisponibles: string[] = [];
+  //     querySnapshot.forEach((doc) => {
+  //       const turno = doc.data() as Turno;
+  //       turnosDisponibles.push(turno.horario);
+  //     });
+  
+  //     return turnosDisponibles;
+  //   } catch (error) {
+  //     console.error('Error al obtener turnos disponibles:', error);
+  //     throw new Error('Error al obtener turnos disponibles en Firestore.');
+  //   }
+  // }
+
+  obtenerTurnosPorEspecialista(especialistaId: string): Observable<Turno[]> {
+    const turnosCollectionRef = collection(this.firestore, 'turnos');
+    const q = query(turnosCollectionRef, where('especialistaId', '==', especialistaId));
+    return from(getDocs(q)).pipe(
+      map((querySnapshot) => {
+        const turnos: Turno[] = [];
+        querySnapshot.forEach((doc) => {
+          const data = doc.data() as Turno;
+          turnos.push(data);
+        });
+        return turnos;
+      })
+    );
+  }
+
+  async obtenerTurnosAceptadosPorEspecialista(especialistaId: string): Promise<Turno[]> {
+    const turnosRef = collection(this.firestore, 'turnos');
+    const q = query(turnosRef, where('especialistaId', '==', especialistaId), where('estado', '==', 'aceptado'));
+    const querySnapshot = await getDocs(q);
+
+    const turnos: Turno[] = [];
+    querySnapshot.forEach((doc) => {
+      const data = doc.data();
+      turnos.push({
+        id: doc.id,
+        especialidad: data['especialidad'],
+        especialistaId: data['especialistaId'],
+        fechaHora: data['fechaHora'],
+        horaInicio: data['horaInicio'],
+        horaFin: data['horaFin'],
+        estado: data['estado'],
+        ocupado: data['ocupado'],
+        paciente: {
+          mail: data['paciente'].mail,
+          nombre: data['paciente'].nombre,
+          apellido: data['paciente'].apellido
+        },
+        especialista: {
+          mail: data['especialista'].mail,
+          nombre: data['especialista'].nombre,
+          apellido: data['especialista'].apellido
+        }
       });
-  
-      return turnosDisponibles;
-    } catch (error) {
-      console.error('Error al obtener turnos disponibles:', error);
-      throw new Error('Error al obtener turnos disponibles en Firestore.');
-    }
+    });
+
+    return turnos;
   }
 
-  async obtenerTurnosOcupadosPorEspecialistaYFecha(especialista: string, fecha: Date): Promise<string[]> {
-    try {
-      const turnosQuery = query(
-        this.turnosCollection,
-        where('especialista', '==', especialista),
-        where('fecha', '==', fecha),
-        where('estado', '!=', 'pendiente')
-      );
+
+  async obtenerTurnosDisponiblesParaEspecialista(especialistaId: string): Promise<TurnoDisponible[]> {
+    const disponibilidadEspecialista = await this.especialistaService.obtenerDisponibilidadEspecialista(especialistaId);
+    const turnosAceptados = await this.obtenerTurnosAceptadosPorEspecialista(especialistaId);
+    const horariosAceptados = turnosAceptados.map(turno => turno.horario).filter(horario => horario !== undefined) as string[];
   
-      const querySnapshot: QuerySnapshot<any> = await getDocs(turnosQuery);
-  
-      const turnosOcupados: string[] = [];
-      querySnapshot.forEach((doc) => {
-        const turno = doc.data() as Turno;
-        turnosOcupados.push(turno.horario);
+    const turnosDisponibles: TurnoDisponible[] = disponibilidadEspecialista.flatMap(horario => {
+      const turnosHorario = this.especialistaService.generarTurnosDisponibles(horario);
+      return turnosHorario.map(turno => {
+        const ocupado = horariosAceptados.includes(turno.horaInicio + ' - ' + turno.horaFin);
+        return {
+          ...turno,
+          ocupado
+        };
       });
+    });
   
-      return turnosOcupados;
-    } catch (error) {
-      console.error('Error al obtener turnos ocupados:', error);
-      throw new Error('Error al obtener turnos ocupados en Firestore.');
-    }
+    return turnosDisponibles;
   }
 
-  async obtenerTurnosPorEspecialistaYFecha(especialistaId: string, fecha: Date): Promise<{ disponibles: string[], ocupados: string[] }> {
-    try {
-      // Obtener los turnos disponibles para el especialista en la fecha especificada
-      const turnosDisponibles = await this.obtenerTurnosDisponiblesPorEspecialistaYFecha(especialistaId, fecha);
-  
-      // Obtener los turnos ocupados para el especialista en la fecha especificada
-      const turnosOcupados = await this.obtenerTurnosOcupadosPorEspecialistaYFecha(especialistaId, fecha);
-  
-      return { disponibles: turnosDisponibles, ocupados: turnosOcupados };
-    } catch (error) {
-      console.error('Error al obtener los turnos disponibles y ocupados:', error);
-      throw new Error('Error al obtener los turnos disponibles y ocupados desde Firestore.');
-    }
-  }
 
-  async obtenerHorariosDisponiblesEspecialista(especialista: string): Promise<string[]> {
-    try {
-      const turnosQuery = query(
-        this.turnosCollection,
-        where('especialista', '==', especialista),
-        where('estado', '==', 'pendiente')
-      );
+  // async obtenerHorariosDisponiblesEspecialista(especialista: string): Promise<string[]> {
+  //   try {
+  //     const turnosQuery = query(
+  //       this.turnosCollection,
+  //       where('especialista', '==', especialista),
+  //       where('estado', '==', 'pendiente')
+  //     );
 
-      const querySnapshot: QuerySnapshot<any> = await getDocs(turnosQuery);
+  //     const querySnapshot: QuerySnapshot<any> = await getDocs(turnosQuery);
 
-      const horariosDisponibles: string[] = [];
-      querySnapshot.forEach((doc) => {
-        const turno = doc.data() as Turno;
-        horariosDisponibles.push(turno.horario);
-      });
+  //     const horariosDisponibles: string[] = [];
+  //     querySnapshot.forEach((doc) => {
+  //       const turno = doc.data() as Turno;
+  //       horariosDisponibles.push(turno.horario);
+  //     });
 
-      return horariosDisponibles;
-    } catch (error) {
-      console.error('Error al obtener los horarios disponibles para el especialista:', error);
-      throw new Error('Error al obtener los horarios disponibles para el especialista desde Firestore.');
-    }
-  }
+  //     return horariosDisponibles;
+  //   } catch (error) {
+  //     console.error('Error al obtener los horarios disponibles para el especialista:', error);
+  //     throw new Error('Error al obtener los horarios disponibles para el especialista desde Firestore.');
+  //   }
+  // }
 
   obtenerPacientePorId(pacienteId: number): Observable<any> {
     const docRef = doc(this.firestore, `pacientes/${pacienteId}`);
@@ -384,4 +462,5 @@ export class TurnosService {
       })
     );
   }
+  
 }

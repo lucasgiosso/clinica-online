@@ -132,9 +132,15 @@ body {
     
   }
 
+  .especialistas-boton-cuadrado{
+    width: 120px;
+    height: 120px;
+  }
+
   .especialidad-button {
     object-fit: cover;
-    margin-top: -33px;
+    margin-top: -23px;
+    margin-left: 15px;
   }
 
   .especialidad-button1 {
@@ -155,6 +161,16 @@ body {
 
   }
 
+  .fecha-hora {
+    white-space: nowrap; /* Evita el corte de línea */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    width: 100%;
+  }
+
   .especialidad-image {
     width: 20%;
     height: 20%; 
@@ -170,27 +186,26 @@ body {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-  }
-  
-  .horarios-container button {
-    margin: 5px;
-    padding: 10px;
-    border: 1px solid #ffffff;
-    border-radius: 5px;
-    background-color: #37d84d;
-    color: #fff;
-    cursor: pointer;
-    width: 175px;
-    height: 50px; 
-    font-size: 13px;
-    
+    gap: 10px;
   }
 
+  .horarios-container button {
+    width: 120px; 
+    height: 120px; 
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #37d84d;
+    border: none;
+    color: white;
+    font-size: 12px;
+    text-align: center;
+    cursor: pointer;
+  }
+  
   .horarios-container button.selected-turno {
-    background-color: #a32993; /* Color de fondo seleccionado */
-    color: #fff; /* Color de texto */
-    border-color: #ccc; /* Color de borde */
-    /* Ajusta cualquier otro estilo según tus preferencias */
+    border: 2px solid #a32993;
+    background-color: #a32993; 
   }
 
   .navbar-custom {
@@ -274,5 +289,36 @@ body {
     display: block;
   }
 
+
+  /* Estilos para los turnos disponibles */
+.turno-disponible {
+  background-color: green;
+  color: white;
+  border: 1px solid black;
+  padding: 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+
+.turno-ocupado {
+  background-color: red !important;
+  color: white;
+  border: 1px solid black;
+  padding: 10px;
+  border-radius: 5px;
+  cursor: not-allowed;
+}
+
+/* Estilos para el turno seleccionado */
+.turno-seleccionado {
+  border: 2px solid #a32993 !important;
+  background-color: #a32993 !important; 
+  color: white;
+  border: 1px solid black;
+  padding: 10px;
+  border-radius: 5px;
+}
   
   

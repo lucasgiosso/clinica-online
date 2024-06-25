@@ -1,6 +1,6 @@
 import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { Router } from '@angular/router';
-import { Observable } from 'rxjs';
+import { Observable, catchError, of, switchMap } from 'rxjs';
 import { AuthService } from '../../services/auth.service';
 import Swal from 'sweetalert2';
 import { Auth,User } from '@angular/fire/auth';
@@ -10,6 +10,7 @@ import { FilterEspPipe } from "../../pipes/filter-esp.pipe";
 import { LoadingComponent } from "../../loading/loading.component";
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { FilterPipe } from "../../pipes/filter.pipe";
+import { Timestamp } from '@angular/fire/firestore';
 
 @Component({
     selector: 'app-mis-turnos',
@@ -58,7 +59,12 @@ export class MisTurnosComponent implements OnInit{
   isPaciente: boolean = false;
   isEspecialista: boolean = false;
   tieneTurnoCancelado: boolean = false;
+  tieneTurnoRechazado: boolean = false;
+  userRole: string | null = null;
+  animate = false;
 
+  turnos$: Observable<any[]> = new Observable<any[]>();;
+  
   constructor (private router: Router, private authService: AuthService, private turnosService: TurnosService, private auth: Auth) {
     this.currentUser$ = this.authService.getCurrentUser();
     this.selectedYear = 0; 
@@ -70,56 +76,63 @@ export class MisTurnosComponent implements OnInit{
 
   ngOnInit(): void {
     console.log('ngOnInit called');
-    this.currentUser$.subscribe(
-      (user) => {
-        console.log('Usuario logueado:', user);
-        if (user && user.email) {
-          this.pacienteMail = user.email.toLowerCase();
-          this.especialistasMail = user.email.toLowerCase();
-          this.determinarRolUsuario();
-          //this.obtenerTurnosPorEspecialista(this.especialistasMail);
+
+    this.currentUser$.pipe(
+      switchMap(user => {
+        if (user) {
+          const userEmail = user.email!;
+          return this.authService.getUserRole().pipe(
+            switchMap(userRole => {
+              this.userRole = userRole;
+              if (userRole) {
+                console.log(`UserRole: ${userRole}`);
+                return this.turnosService.obtenerTurnosPorUsuario(userEmail, userRole);
+              } else {
+                return of([]);
+              }
+            }),
+            catchError(error => {
+              console.error('Error fetching user role or turnos:', error);
+              return of([]);
+            })
+          );
         } else {
-          console.error('No se encontró el usuario actual o el correo electrónico es nulo');
-          this.router.navigate(['/login']);
+          return of([]);
         }
-      },
-      (error) => {
-        console.error('Error al obtener el usuario actual:', error);
-      }
-    );
-    
-    
-    setTimeout(() => {
-      this.showLoading = false; // Ocultar el loading después de 2 segundos
-    }, 2000); //
-
-  }
-
-  determinarRolUsuario(): void {
-    this.authService.getUserRole().subscribe(
-      (role) => {
-        this.isPaciente = role === 'paciente';
-        this.isEspecialista = role === 'especialista';
-        if (this.isPaciente) {
-          this.obtenerTurnosPaciente(this.pacienteMail);
-        } else if (this.isEspecialista) {
-          this.obtenerTurnosEspecialista(this.especialistasMail);
-        }
-      },
-      (error) => {
-        console.error('Error al obtener el rol del usuario:', error);
-      }
-    );
+      })
+    ).subscribe(turnos => {
+      this.turnos = turnos;
+      this.turnos$ = of(turnos);
+      this.showLoading = false;
+      this.actualizarCondiciones();
+      console.log('Turnos fetched:', turnos);
+    });
   }
 
   public onClickHome(event: any): void 
   {
-    this.router.navigate(['home']);
+    this.animate = true;
+    setTimeout(() => {
+      this.router.navigate(['/home']);
+    }, 600); // Tie
   }
 
   toggleDropdown() {
     this.isDropdownOpen = !this.isDropdownOpen;
     this.showLogoutButton = this.isDropdownOpen; 
+  }
+
+  private actualizarCondiciones(): void {
+    this.tieneTurnoCancelado = this.turnos.some(turno => turno.motivoCancelacion !== undefined);
+    this.tieneTurnoRechazado = this.turnos.some(turno => turno.motivoRechazo !== undefined);
+
+    if (this.tieneTurnoCancelado) {
+      console.log('Hay al menos un turno cancelado.');
+    }
+
+    if (this.tieneTurnoRechazado) {
+      console.log('Hay al menos un turno rechazado.');
+    }
   }
 
   async logout() {
@@ -179,107 +192,105 @@ export class MisTurnosComponent implements OnInit{
     }
   }
 
-  obtenerTurnosPorEspecialista(especialistaMail: string) {
-    console.log('llega?');
-    this.turnosService.obtenerTurnosPorEspecialista(especialistaMail).subscribe(
-      turnos => {
-        console.log('Turnos obtenidos:', turnos);
-        this.turnos = turnos;
-        this.showLoading = false;
-      },
-      error => {
-        console.error('Error al obtener turnos:', error);
-        this.showLoading = false;
-      }
-    );
-  }
 
-
-  async obtenerTurnosEspecialista(especialistaMail: string): Promise<void> {
-    try {
-      console.log('Obteniendo turnos para el especialista:', especialistaMail);
-      this.turnosService.obtenerTurnosPorEspecialista(especialistaMail).subscribe(
-        (turnos) => {
-          console.log('Turnos del especialista:', turnos);
-          this.turnosEspecialista = turnos;
-          this.turnosFiltradosEspecialista = this.turnosEspecialista;
-          this.showLoading = false;
-        },
-        (error) => {
-          console.error('Error al obtener los turnos del especialista:', error);
-          Swal.fire({
-            icon: 'error',
-            title: 'Error al obtener los turnos',
-            text: 'Hubo un problema al obtener los turnos del especialista. Por favor, inténtalo nuevamente.'
-          });
-          this.showLoading = false;
-        }
-      );
-    } catch (error) {
-      console.error('Error al obtener los turnos del especialista:', error);
+  aceptarTurno(turno: Turno) {
+    if (turno.estado !== 'pendiente') {
       Swal.fire({
         icon: 'error',
-        title: 'Error al obtener los turnos',
-        text: 'Hubo un problema al obtener los turnos del especialista. Por favor, inténtalo nuevamente.'
+        title: 'No Disponible',
+        text: 'El turno no está en estado pendiente y no puede ser aceptado.',
+        confirmButtonText: 'OK'
       });
-      this.showLoading = false;
+      return;
     }
+
+    Swal.fire({
+      title: 'Aceptar Turno',
+      text: '¿Está seguro de que desea aceptar este turno?',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Aceptar',
+      cancelButtonText: 'Cancelar'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        console.log('Verificando disponibilidad para turno con ID:', turno.id);
+        const fechaHora = turno.fechaHora instanceof Timestamp ? turno.fechaHora.toDate() : turno.fechaHora;
+
+        const horaInicio = turno.horaInicio || '';
+        const horaFin = turno.horaFin || '';
+
+        this.turnosService.verificarDisponibilidad(turno.especialistaId, fechaHora, horaInicio, horaFin).subscribe(disponible => {
+          if (disponible) {
+            console.log('Turno disponible, aceptando turno con ID:', turno.id);
+            this.turnosService.aceptarTurno(turno.id).then(() => {
+              Swal.fire({
+                icon: 'success',
+                title: 'Turno Aceptado',
+                text: 'El turno ha sido aceptado correctamente.',
+                confirmButtonText: 'OK'
+              });
+
+              // Actualizar el estado del turno en la lista local
+              this.turnos = this.turnos.map(t => t.id === turno.id ? { ...t, estado: 'aceptado', ocupado: true } : t);
+              this.turnos$ = of(this.turnos);
+            }).catch((error: any) => {
+              Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Hubo un problema al aceptar el turno. Por favor, inténtalo nuevamente.',
+                confirmButtonText: 'OK'
+              });
+              console.error('Error al aceptar el turno:', error);
+            });
+          } else {
+            Swal.fire({
+              icon: 'error',
+              title: 'No Disponible',
+              text: 'El turno ya está ocupado. Por favor, elija otro horario.',
+              confirmButtonText: 'OK'
+            });
+            console.log('Turno no disponible:', turno);
+          }
+        });
+      }
+    });
   }
 
-  solicitarTurno() {
-    // Verifica si se ha seleccionado una fecha válida
-    if (this.selectedYear && this.selectedMonth && this.selectedDay) {
-        // Crear un objeto Date a partir de los valores seleccionados
-        const fechaSeleccionada = new Date(this.selectedYear, this.selectedMonth, this.selectedDay);
-        
-        // Verificar si la fecha es válida
-        if (isNaN(fechaSeleccionada.getTime())) {
-            // La fecha no es válida, muestra un mensaje de error
-            console.error('La fecha seleccionada no es válida');
-            return;
+
+
+  cancelarTurno(turno: Turno) {
+    Swal.fire({
+      title: 'Cancelar Turno',
+      text: 'Ingrese el motivo de la cancelación:',
+      input: 'text',
+      inputAttributes: {
+        'aria-label': 'Ingrese el motivo de la cancelación'
+      },
+      showCancelButton: true,
+      confirmButtonText: 'Cancelar Turno',
+      cancelButtonText: 'Cerrar',
+      inputValidator: (value) => {
+        if (!value) {
+          return 'Debes ingresar un motivo para cancelar el turno';
+        } else {
+          return null;
         }
-
-        const especialidad = 'Cardiología'; 
-        const especialista = 'Dr. García'; 
-
-        // Llama a la función de servicio pasando la fecha seleccionada como Date
-        const nuevoTurno = this.turnosService.solicitarTurno(especialidad, especialista, fechaSeleccionada, this.horaInicio, this.horaFin, this.pacienteMail,this.pacienteNombre, this.pacienteApellido,this.especialistasMail,this.especialistasNombre, this.especialistasApellido);
-        console.log('Nuevo turno solicitado:', nuevoTurno);
-    } else {
-        // Si no se ha seleccionado una fecha, muestra un mensaje de error
-        console.error('No se ha seleccionado una fecha válida');
-    }
-}
-
-cancelarTurno(turno: any) {
-  Swal.fire({
-    title: 'Cancelar Turno',
-    text: 'Ingrese el motivo de la cancelación:',
-    input: 'text',
-    inputAttributes: {
-      'aria-label': 'Ingrese el motivo de la cancelación'
-    },
-    showCancelButton: true,
-    confirmButtonText: 'Cancelar Turno',
-    cancelButtonText: 'Cerrar',
-    inputValidator: (value) => {
-      if (!value) {
-        return 'Debes ingresar un motivo para cancelar el turno';
-      } else {
-        return null;
       }
-    }
-  }).then((result) => {
-    if (result.isConfirmed && result.value) {
-      const motivo = result.value;
-      if (this.pacienteMail) {
-        this.turnosService.cancelarTurno(turno.id, this.pacienteMail, motivo).then(() => {
+    }).then((result) => {
+      if (result.isConfirmed && result.value) {
+        const motivo = result.value;
+        this.turnosService.cancelarTurno(turno.id, motivo).then(() => {
           Swal.fire({
             icon: 'success',
             title: 'Turno Cancelado',
             text: 'El turno ha sido cancelado correctamente.',
             confirmButtonText: 'OK'
           });
+
+          // Actualizar el estado del turno en la lista local
+          this.turnos = this.turnos.map(t => t.id === turno.id ? { ...t, estado: 'cancelado', motivoCancelacion: motivo } : t);
+          this.actualizarCondiciones();
+          //this.turnos$ = of(this.turnos);
         }).catch((error: any) => {
           Swal.fire({
             icon: 'error',
@@ -289,20 +300,115 @@ cancelarTurno(turno: any) {
           });
           console.error('Error al cancelar el turno:', error);
         });
-      } else {
-        Swal.fire({
-          icon: 'error',
-          title: 'Error',
-          text: 'No se pudo obtener el correo electrónico del paciente.',
-          confirmButtonText: 'OK'
+      }
+    });
+  }
+
+  rechazarTurno(turno: Turno) {
+    Swal.fire({
+      title: 'Rechazar Turno',
+      text: 'Ingrese el motivo de la cancelación:',
+      input: 'text',
+      inputAttributes: {
+        'aria-label': 'Ingrese el motivo de la cancelación'
+      },
+      showCancelButton: true,
+      confirmButtonText: 'Rechazar Turno',
+      cancelButtonText: 'Cerrar',
+      inputValidator: (value) => {
+        if (!value) {
+          return 'Debes ingresar un motivo para rechazar el turno';
+        } else {
+          return null;
+        }
+      }
+    }).then((result) => {
+      if (result.isConfirmed && result.value) {
+        const motivo = result.value;
+        this.turnosService.rechazarTurno(turno.id, motivo).then(() => {
+          Swal.fire({
+            icon: 'success',
+            title: 'Turno rechazado',
+            text: 'El turno ha sido rechazado correctamente.',
+            confirmButtonText: 'OK'
+          });
+
+          this.turnos = this.turnos.map(t => t.id === turno.id ? { ...t, estado: 'rechazado', motivoRechazo: motivo } : t);
+          this.tieneTurnoRechazado = this.turnos.some(t => t.motivoRechazo !== undefined);
+          this.turnos$ = of(this.turnos);
+        }).catch((error: any) => {
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Hubo un problema al rechazado el turno. Por favor, inténtalo nuevamente.',
+            confirmButtonText: 'OK'
+          });
+          console.error('Error al rechazado el turno:', error);
         });
       }
-    }
-  });
-}
+    });
+  }
+
+  finalizarTurno(turno: Turno) {
+    Swal.fire({
+      title: 'Finalizar Turno',
+      text: 'Ingrese un comentario o reseña de la consulta:',
+      input: 'textarea',
+      inputAttributes: {
+        'aria-label': 'Ingrese un comentario o reseña'
+      },
+      showCancelButton: true,
+      confirmButtonText: 'Finalizar Turno',
+      cancelButtonText: 'Cerrar',
+      inputValidator: (value) => {
+        if (!value) {
+          return 'Debes ingresar un comentario para finalizar el turno';
+        } else {
+          return null;
+        }
+      }
+    }).then((result) => {
+      if (result.isConfirmed && result.value) {
+        const comentario = result.value;
+        this.turnosService.finalizarTurno(turno.id, comentario).then(() => {
+          Swal.fire({
+            icon: 'success',
+            title: 'Turno Finalizado',
+            text: 'El turno ha sido finalizado correctamente.',
+            confirmButtonText: 'OK'
+          });
+
+          this.turnos = this.turnos.map(t => t.id === turno.id ? { ...t, estado: 'realizado', comentario } : t);
+          this.turnos$ = of(this.turnos);
+        }).catch((error: any) => {
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Hubo un problema al finalizar el turno. Por favor, inténtalo nuevamente.',
+            confirmButtonText: 'OK'
+          });
+          console.error('Error al finalizar el turno:', error);
+        });
+      }
+    });
+  }
+
+  cargarHistoriaClinica(turno: Turno) {
+    const turnoId = turno.id;
+    const pacienteEmail = turno.paciente.mail;
+  
+    this.authService.getUserByEmail(pacienteEmail).subscribe(paciente => {
+      if (paciente && paciente.id) {
+        const pacienteId = paciente.id;
+        this.router.navigate(['/historia-clinica', { turnoId: turnoId, pacienteId: pacienteId }]);
+      } else {
+        console.error('No se pudo encontrar la información del paciente.');
+      }
+    });
+  }
 
 verResena(turno: Turno): void {
-  this.turnosService.obtenerResena(turno.id, turno.paciente.mail).subscribe(
+  this.turnosService.obtenerResena(turno.id).subscribe(
     (comentario) => {
       if (comentario) {
         Swal.fire({
@@ -330,6 +436,7 @@ verResena(turno: Turno): void {
     }
   );
 }
+
 
 completarEncuesta(turno: Turno): void {
   Swal.fire({
@@ -410,7 +517,7 @@ completarEncuesta(turno: Turno): void {
   }).then((result) => {
     if (result.isConfirmed) {
       const encuestaData = result.value;
-      this.turnosService.completarEncuesta(turno.id, turno.paciente.mail, encuestaData)
+      this.turnosService.completarEncuesta(turno.id, encuestaData)
         .then(() => {
           Swal.fire('Encuesta completada', 'La encuesta ha sido enviada correctamente.', 'success');
           turno.encuestaCompletada = true;
@@ -458,7 +565,7 @@ calificarAtencion(turno: Turno): void {
     }
   }).then((result) => {
     if (result.isConfirmed && result.value) {
-      this.turnosService.calificarAtencion(turno.id, turno.paciente.mail, result.value)
+      this.turnosService.calificarAtencion(turno.id, result.value)
         .then(() => {
           turno.calificacionCompletada = true;
           Swal.fire('Calificación enviada', 'La calificación ha sido enviada correctamente.', 'success');
@@ -472,15 +579,36 @@ calificarAtencion(turno: Turno): void {
 }
 
 verCalificacion(turno: Turno): void {
-  Swal.fire({
-    title: 'Comentario de la Calificación',
-    html: `
-      <div>
-        <strong><p>${turno.comentarioCalificacion}</p></strong>
-      </div>
-    `,
-    confirmButtonText: 'Cerrar'
-  });
+  this.turnosService.obtenerTurnoPorId(turno.id).subscribe(
+    (turnoCompleto) => {
+      if (turnoCompleto.comentarioCalificacion) {
+        Swal.fire({
+          title: 'Comentario de la Calificación',
+          html: `
+            <div>
+              <strong><p>${turnoCompleto.comentarioCalificacion}</p></strong>
+            </div>
+          `,
+          confirmButtonText: 'Cerrar'
+        });
+      } else {
+        Swal.fire({
+          title: 'No hay calificación',
+          text: 'Este turno no tiene una calificación cargada.',
+          icon: 'warning',
+          confirmButtonText: 'Cerrar'
+        });
+      }
+    },
+    (error) => {
+      Swal.fire({
+        title: 'Error',
+        text: 'No se pudo obtener la calificación del turno.',
+        icon: 'error',
+        confirmButtonText: 'Cerrar'
+      });
+    }
+  );
 }
 
   userLogged() {

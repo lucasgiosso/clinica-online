@@ -1,0 +1,174 @@
+.background-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-image: url('/assets/fondo-hc1.png');
+    background-size: cover;
+    background-position: center;
+  }
+
+.form-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 95vh;
+    margin-bottom: 100px;
+  }
+  
+  .historia-clinica-form {
+    max-width: 700px;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  .form-header {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  
+  .logo {
+    max-width: 100px;
+    margin-bottom: 10px;
+  }
+  
+  .form-header h2 {
+    margin: 0;
+    font-size: 24px;
+  }
+  
+  .form-header h4 {
+    margin: 0;
+    font-size: 18px;
+    color: #666;
+  }
+  
+  .form-group {
+    margin-bottom: 15px;
+  }
+  
+  .form-group label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 5px;
+  }
+  
+  .form-group input {
+    width: calc(100% - 20px);
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+  }
+  
+  .dato-dinamico {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  
+  .dato-dinamico label {
+    flex: 1;
+  }
+  
+  .dato-dinamico input {
+    flex: 2;
+  }
+  
+  .btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  .btn-secondary {
+    background-color: #6c757d;
+    color: white;
+    margin-right: 10px;
+  }
+  
+  .btn-primary {
+    background-color: #007bff;
+    color: white;
+  }
+  
+  .btn:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+  }
+
+  .btn-success {
+    background-color: #a72892;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  .btn-success:hover {
+    background-color: #7f196e;
+  }
+
+  .center-button {
+    position: fixed;
+    bottom: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 40px;
+    width: 100%;
+  }
+
+  .slide-out-elliptic-top-bck {
+	-webkit-animation: slide-out-elliptic-top-bck 0.7s ease-in both;
+	        animation: slide-out-elliptic-top-bck 0.7s ease-in both;
+}
+  
+
+ @-webkit-keyframes slide-out-elliptic-top-bck {
+    0% {
+      -webkit-transform: translateY(0) rotateX(0) scale(1);
+              transform: translateY(0) rotateX(0) scale(1);
+      -webkit-transform-origin: 50% 1400px;
+              transform-origin: 50% 1400px;
+      opacity: 1;
+    }
+    100% {
+      -webkit-transform: translateY(-600px) rotateX(-30deg) scale(0);
+              transform: translateY(-600px) rotateX(-30deg) scale(0);
+      -webkit-transform-origin: 50% 100%;
+              transform-origin: 50% 100%;
+      opacity: 1;
+    }
+  }
+  @keyframes slide-out-elliptic-top-bck {
+    0% {
+      -webkit-transform: translateY(0) rotateX(0) scale(1);
+              transform: translateY(0) rotateX(0) scale(1);
+      -webkit-transform-origin: 50% 1400px;
+              transform-origin: 50% 1400px;
+      opacity: 1;
+    }
+    100% {
+      -webkit-transform: translateY(-600px) rotateX(-30deg) scale(0);
+              transform: translateY(-600px) rotateX(-30deg) scale(0);
+      -webkit-transform-origin: 50% 100%;
+              transform-origin: 50% 100%;
+      opacity: 1;
+    }
+  }
+
+  
+  .error-message {
+    color: red;
+    font-size: 12px;
+    margin-top: 5px;
+  }
+  

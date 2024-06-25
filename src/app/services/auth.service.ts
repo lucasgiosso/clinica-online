@@ -1,9 +1,10 @@
 import { Injectable } from '@angular/core';
 import { Auth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut,  User, fetchSignInMethodsForEmail } from '@angular/fire/auth';
-import { Firestore, collection, getDoc, doc, updateDoc, query, getDocs, QuerySnapshot, where } from '@angular/fire/firestore';
+import { Firestore, collection, getDoc, doc, updateDoc, query, getDocs, QuerySnapshot, where, collectionData } from '@angular/fire/firestore';
 import { UserCredential, onAuthStateChanged, sendEmailVerification } from '@angular/fire/auth';
 import { DataService } from './data.service';
 import { BehaviorSubject, Observable, from, map, switchMap } from 'rxjs';
+import { Paciente } from './turnos.service';
 
 
 @Injectable({
@@ -96,6 +97,20 @@ getCurrentUser(): Observable<User | null> {
   });
 }
 
+
+
+obtenerPacientes(): Observable<Paciente[]> {
+  const pacientesCollection = collection(this.firestore, 'DatosUsuarios');
+  return collectionData(pacientesCollection, { idField: 'id' }).pipe(
+    map(data => data
+      .filter(item => item['role'] === 'paciente') 
+      .map(item => ({
+        email: item['mail'],
+        nombre: item['nombre'],
+        apellido: item['apellido']
+      }) as Paciente))
+  );
+}
 
 getUserRole(): Observable<string | null> {
   return this.getCurrentUser().pipe(
@@ -196,6 +211,25 @@ async obtenerUsuarios(): Promise<any[]> {
   }
 }
 
+obtenerUsuarios1(): Observable<any[]> {
+  const usuariosCollection = collection(this.firestore, 'DatosUsuarios');
+  return collectionData(usuariosCollection, { idField: 'id' });
+}
+
+getUserByEmail(email: string): Observable<any> {
+  const usersRef = collection(this.firestore, 'DatosUsuarios');
+  const q = query(usersRef, where('mail', '==', email));
+  return from(getDocs(q)).pipe(
+    map(snapshot => {
+      if (snapshot.empty) {
+        return null;
+      }
+      const userDoc = snapshot.docs[0];
+      return { id: userDoc.id, ...userDoc.data() };
+    })
+  );
+}
+
 async obtenerListaEspecialidades(): Promise<string[]> {
   try {
     const usuariosQuery = query(collection(this.firestore, 'DatosUsuarios'));
@@ -224,45 +258,6 @@ async obtenerListaEspecialidades(): Promise<string[]> {
     throw error;
   }
 }
-
-
-// async obtenerEspecialistasPorEspecialidad(especialidad: string): Promise<any[]> {
-//   try {
-//     const usuariosQuery = query(
-//       collection(this.firestore, 'DatosUsuarios'),
-//       where('especialidad', '==', especialidad)
-//     );
-
-//     const querySnapshot: QuerySnapshot<any> = await getDocs(usuariosQuery);
-
-//     const especialistas: any[] = [];
-//     querySnapshot.forEach((doc) => {
-//       const { nombre, apellido, imagenPerfil } = doc.data();
-//       const especialista = { id: doc.id, nombre, apellido, imagenPerfil };
-//       especialistas.push(especialista);
-//     });
-
-//     if (especialistas.length === 0) {
-//       const otraEspecialidadQuery = query(
-//         collection(this.firestore, 'DatosUsuarios'),
-//         where('otraEspecialidad', '==', especialidad)
-//       );
-
-//       const otraEspecialidadSnapshot: QuerySnapshot<any> = await getDocs(otraEspecialidadQuery);
-
-//       otraEspecialidadSnapshot.forEach((doc) => {
-//         const { nombre, apellido } = doc.data();
-//         const especialista = { id: doc.id, nombre, apellido };
-//         especialistas.push(especialista);
-//       });
-//     }
-
-//     return especialistas;
-//   } catch (error) {
-//     console.error('Error al obtener especialistas por especialidad:', error);
-//     throw error;
-//   }
-// }
 
 async obtenerEspecialistasPorEspecialidad(especialidad: string): Promise<any[]> {
   try {
@@ -330,33 +325,6 @@ async obtenerUsuariosConFotoPerfil(email: string): Promise<any[]> {
     throw error;
   }
 }
-
-// async obtenerEspecialistasConFotoPerfil(especialista: string): Promise<{ nombre: string; imagenPerfilUrl: string }[]> {
-//   try {
-//     const especialistasQuery = query(
-//       collection(this.firestore, 'DatosUsuarios'),
-//       where('role', '==', 'especialista')
-//     );
-
-//     const querySnapshot: QuerySnapshot<any> = await getDocs(especialistasQuery);
-
-//     const especialistas: { nombre: string; imagenPerfilUrl: string }[] = [];
-//     querySnapshot.forEach(async (doc) => {
-//       const usuario = {
-//         id: doc.id,
-//         ...doc.data(),
-//         imagenPerfilUrl: doc.data().imagenPerfil,
-//         especialidad: doc.data().especialidad,
-//       };
-//       especialistas.push(usuario);
-//     });
-
-//     return especialistas;
-//   } catch (error) {
-//     console.error('Error al obtener especialistas:', error);
-//     throw error;
-//   }
-// }
 
 async obtenerEspecialistasConFotoPerfil(especialidad: string): Promise<{ nombre: string; imagenPerfilUrl: string }[]> {
   try {
@@ -444,4 +412,41 @@ async obtenerInfoUsuarioActual(): Promise<any | null> {
       throw error;
   }
 }
+
+async obtenerInfoUsuarioActual1(): Promise<any | null> {
+  try {
+      let usuarioActual: User | null = null;
+
+      await new Promise<void>((resolve) => {
+          const unsubscribe = onAuthStateChanged(this.auth, (user) => {
+              usuarioActual = user;
+              unsubscribe();
+              resolve();
+          });
+      });
+
+      if (usuarioActual) {
+          const uid = (usuarioActual as User).uid;
+          const userDocRef = doc(this.firestore, 'DatosUsuarios', uid);
+          const usuarioDoc = await getDoc(userDocRef);
+
+          if (usuarioDoc.exists()) {
+              return {
+                  id: usuarioDoc.id,
+                  ...usuarioDoc.data(),
+              };
+          } else {
+              console.error('El documento del usuario no existe.');
+              return null;
+          }
+      } else {
+          console.error('Usuario no autenticado.');
+          return null;
+      }
+  } catch (error) {
+      console.error('Error al obtener información del usuario actual:', error);
+      throw error;
+  }
+}
+
 }

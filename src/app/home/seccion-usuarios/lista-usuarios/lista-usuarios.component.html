@@ -3,6 +3,10 @@
 <div class="user-list-container">
   <h2>Lista de Usuarios</h2>
 
+  <div class="center-button">
+    <button class="btn-export" (click)="exportToExcel()">Exportar Usuarios a Excel</button>
+  </div>
+
   <div class="input-container">
     <div class="mb-2 input-width">
       <img src="assets/lupa.png" alt="Buscar" class="buscar-logo">
@@ -66,9 +70,14 @@
               <button (click)="inhabilitarUsuario(usuario.id)" [disabled]="!usuario.aprobadoPorAdmin" [ngClass]="{'custom-disabled-button': !usuario.aprobadoPorAdmin, 'custom-enabled-button': usuario.aprobadoPorAdmin}">
                 Inhabilitar
               </button>
+
+              <button *ngIf="historiasClinicasExist[usuario.id]" (click)="verHistoriaClinica(usuario.id)" [ngClass]="{'custom-enabled-button': true}">
+                Ver historia clínica
+              </button>
           </td>
         </tr>
       </tbody>
+
     </table>
   </div>
 </div>

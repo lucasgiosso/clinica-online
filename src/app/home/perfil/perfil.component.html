@@ -16,7 +16,7 @@
   </div>
   
 
-    <div class="user-container">
+    <div class="user-container" [ngClass]="{ 'swirl-out-bck': animate }">
   
     <div class="user-profile" *ngIf="usuarioLogueado">
       <label class="perfil">Mi perfil</label>
@@ -54,22 +54,55 @@
           <img [src]="usuarioLogueado.imagenPerfil" alt="Imagen de perfil">
         </ng-container>
       </div>
-  
     </div>
   
+    <ng-container *ngIf="isEspecialista">
     <div class="user-profile" *ngIf="usuarioLogueado">
       <div class="user-actions">
-        <ng-container *ngIf="usuarioLogueado.role === 'especialista'">
           <app-especialista-dispo></app-especialista-dispo>
+        </div>
+      </div>
+    </ng-container>
+
+    <ng-container *ngIf="!isEspecialista">
+    <div class="user-profile" *ngIf="usuarioLogueado">
+      <div class="historia-clinica">
+        <ng-container *ngIf="historiaClinica$ | async as historiasClinicas; else noHistoriaClinica">
+          <h2>Historia Clínica</h2>
+          <div *ngFor="let historia of historiasClinicas">
+            <!-- <div>
+              <strong>Fecha:</strong> {{ historia.fecha | date }}
+            </div> -->
+            <div>
+              <p><strong>Altura:</strong> {{ historia.altura }} cm</p>
+            </div>
+            <div>
+              <p><strong>Peso:</strong> {{ historia.peso }} kg</p>
+            </div>
+            <div>
+              <p><strong>Temperatura:</strong> {{ historia.temperatura }} °C</p>
+            </div>
+            <div>
+              <p><strong>Presión:</strong> {{ historia.presion }} mm Hg</p>
+            </div>
+            <div *ngFor="let dato of historia.datosDinamicos">
+              <p><strong>{{ dato.clave }}:</strong> {{ dato.valor }}</p>
+            </div>
+            <button class="btn-export" (click)="generarPDF()">Descargar Historia Clínica en PDF</button>
+          </div>
+          
         </ng-container>
+        <ng-template #noHistoriaClinica>
+          <p>No se encontró historia clínica para este paciente.</p>
+        </ng-template>
       </div>
     </div>
-  
+  </ng-container>
   </div>
   </body>
   
   <div class="center-button">
-    <input type="button" [value]="btnVolver" class="btn-success" (click)="onClickHome($event)" />
+    <input type="button" [value]="btnVolver" class="btn-success" [ngClass]="{ 'swirl-out-bck': animate }" (click)="onClickHome($event)" />
   </div>
   <footer class="site-footer">
     <div class="container">

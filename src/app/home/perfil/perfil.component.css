@@ -205,3 +205,103 @@ img{
     font-size: 14px; 
   }
 
+  .swirl-out-bck {
+    -webkit-animation: swirl-out-bck 0.6s ease-in both;
+            animation: swirl-out-bck 0.6s ease-in both;
+  }
+
+
+@-webkit-keyframes swirl-out-bck {
+  0% {
+    -webkit-transform: rotate(0) scale(1);
+            transform: rotate(0) scale(1);
+    opacity: 1;
+  }
+  100% {
+    -webkit-transform: rotate(-540deg) scale(0);
+            transform: rotate(-540deg) scale(0);
+    opacity: 0;
+  }
+}
+@keyframes swirl-out-bck {
+  0% {
+    -webkit-transform: rotate(0) scale(1);
+            transform: rotate(0) scale(1);
+    opacity: 1;
+  }
+  100% {
+    -webkit-transform: rotate(-540deg) scale(0);
+            transform: rotate(-540deg) scale(0);
+    opacity: 0;
+  }
+}
+
+.historia-clinica {
+  flex: 1;
+  background-color: #f9f9f9;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  margin-top: 95px;
+}
+
+.historia-clinica h2 {
+  margin-top: 0;
+}
+
+.medical-history {
+  flex: 1;
+  background-color: #f9f9f9;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.profile-info h2,
+.medical-history h2 {
+  font-size: 24px;
+  margin-bottom: 20px;
+}
+
+.profile-info h3 {
+  font-size: 20px;
+  margin-bottom: 10px;
+  color: #6a1b9a;
+}
+
+.profile-info p,
+.medical-history p {
+  margin: 10px 0;
+  font-size: 16px;
+}
+
+.profile-image {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  margin-bottom: 10px;
+}
+
+.no-history {
+  flex: 1;
+  text-align: center;
+  background-color: #f9f9f9;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.btn-export {
+  background-color: #4CAF50; /* Green */
+  border: none;
+  color: white;
+  padding: 10px 20px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 2px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+

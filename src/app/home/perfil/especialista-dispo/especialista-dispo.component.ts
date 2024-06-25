@@ -1,18 +1,11 @@
 import { Component } from '@angular/core';
-import { EspecialistaService, TurnoDisponible } from '../../../services/especialista.service';
+import { EspecialistaService, Horario } from '../../../services/especialista.service';
 import { FormArray, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Subject } from 'rxjs';
 import Swal from 'sweetalert2';
 import { CommonModule } from '@angular/common';
-
-
-export interface Horario {
-  id?: number;
-  especialidad: string;
-  dias: string;
-  horaInicio: string;
-  horaFin: string;
-}
+import { TurnoDisponible, TurnosService } from '../../../services/turnos.service';
+import { format } from 'date-fns';
 
 @Component({
   selector: 'app-especialista-dispo',
@@ -30,7 +23,7 @@ export class EspecialistaDispoComponent {
   horasDisponibles: string[] = [];
   editandoHorario: Horario | null = null;
 
-  constructor(private fb: FormBuilder, public especialistaService: EspecialistaService) {
+  constructor(private fb: FormBuilder, public especialistaService: EspecialistaService, private turnosService: TurnosService) {
     this.disponibilidadForm = this.fb.group({
       id: [''],
       especialidad: ['', Validators.required],
@@ -78,10 +71,9 @@ export class EspecialistaDispoComponent {
     }
   }
 
-  
-
   obtenerTurnosDisponibles(especialistaId: string): void {
-    this.especialistaService.obtenerTurnosDisponiblesParaEspecialista(especialistaId)
+
+    this.turnosService.obtenerTurnosDisponiblesParaEspecialista(especialistaId)
       .then((turnosDisponibles: TurnoDisponible[]) => {
 
         console.log('Turnos disponibles para el especialista:', turnosDisponibles);
@@ -174,6 +166,25 @@ export class EspecialistaDispoComponent {
     return this.editandoHorario ? this.disponibilidadForm.value.id || null : null;
   }
 
+  getFormattedDate(turno: TurnoDisponible): string {
+    const dateStr = turno.dias[0]; // Asumiendo que turno.dias[0] contiene la fecha
+    const [day, month, year] = dateStr.split('-').map(Number); // Ajusta según el formato de la fecha que tienes actualmente
+    const date = new Date(year, month - 1, day);
+  
+    const formattedDate = format(date, 'yyyy-MM-dd');
+    const horaInicio = this.formatTime(turno.horaInicio);
+    const horaFin = this.formatTime(turno.horaFin);
+  
+    return `${formattedDate} ${horaInicio} - ${horaFin}`;
+  }
+  
+  formatTime(time: string): string {
+    const [hours, minutes] = time.split(':').map(Number);
+    const period = hours >= 12 ? 'PM' : 'AM';
+    const formattedHours = hours % 12 || 12;
+    return `${formattedHours}:${minutes.toString().padStart(2, '0')} ${period}`;
+  }
+
   guardarDisponibilidad() {
     if (this.disponibilidadForm.valid) {
       const diasSeleccionados = this.disponibilidadForm.value.dias || [];
@@ -242,12 +253,6 @@ export class EspecialistaDispoComponent {
     this.disponibilidadForm.patchValue({
       ...horario,
     });
-    // this.disponibilidadForm.patchValue({
-    //   especialidad: horario.especialidad || '',
-    //   dias: horario.dias || '',
-    //   horaInicio: horario.horaInicio || '',
-    //   horaFin: horario.horaFin || '',
-    // });
 
   }
 

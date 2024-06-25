@@ -58,7 +58,7 @@
     </div>
   </div> -->
   
-    <div *ngIf="mostrarFormulario" class="container">
+    <div *ngIf="mostrarFormulario" class="container" id="crear-usuario-form">
       <h2>Crear usuario</h2>
       <form [formGroup]="formReg" class="add-user-form" (ngSubmit)="onSubmit()">
         <div class="form-row">
@@ -206,9 +206,3 @@
       <p>&copy; 2024 Clinica Online. Todos los derechos reservados.</p>
     </footer>
   </body>
-  
-  
-  
-  
-  
-  

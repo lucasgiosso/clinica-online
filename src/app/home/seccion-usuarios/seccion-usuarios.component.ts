@@ -1,4 +1,4 @@
-import { Component, EventEmitter, HostListener, Output } from '@angular/core';
+import { Component, ElementRef, EventEmitter, HostListener, Output, ViewChild } from '@angular/core';
 import Swal from 'sweetalert2';
 import { ImagesService } from '../../services/images.service'
 import { CommonModule } from '@angular/common';
@@ -43,6 +43,7 @@ export class SeccionUsuariosComponent {
   animacionCrearUsuario: boolean = false;
   usuarios: any[] = [];
   mostrarFormulario: boolean = false;
+  @ViewChild('formulario') formulario!: ElementRef;
 
 
 
@@ -115,8 +116,34 @@ onResize(event: any){
     this.router.navigate(['home']);
   }
 
+  // toggleFormulario() {
+  //   this.mostrarFormulario = !this.mostrarFormulario;
+  //   if (this.mostrarFormulario) {
+  //     setTimeout(() => {
+  //       this.scrollToFormulario();
+  //     }, 100); 
+  //   }
+  // }
+
   toggleFormulario() {
     this.mostrarFormulario = !this.mostrarFormulario;
+    if (this.mostrarFormulario) {
+      this.animacionCrearUsuario = true;
+      setTimeout(() => {
+        const formElement = document.getElementById('crear-usuario-form');
+        if (formElement) {
+          formElement.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 100); // Delay to allow the form to be rendered
+    } else {
+      this.animacionCrearUsuario = false;
+    }
+  }
+
+  scrollToFormulario() {
+    if (this.formulario && this.formulario.nativeElement) {
+      this.formulario.nativeElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   }
 
   toggleCrearUsuario() {

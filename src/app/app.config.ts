@@ -6,6 +6,7 @@ import { initializeApp, provideFirebaseApp } from '@angular/fire/app';
 import { getAuth, provideAuth } from '@angular/fire/auth';
 import { getFirestore, provideFirestore } from '@angular/fire/firestore';
 import { HttpClientModule } from '@angular/common/http';
+import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 
 export const appConfig: ApplicationConfig = {
   providers: [provideRouter(routes), 
@@ -18,5 +19,5 @@ export const appConfig: ApplicationConfig = {
       "messagingSenderId":"456707267977"})), 
       provideAuth(() => getAuth()), 
       provideFirestore(() => getFirestore()),
-      importProvidersFrom(HttpClientModule)]
+      importProvidersFrom(HttpClientModule), provideAnimationsAsync()]
 };

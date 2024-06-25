@@ -20,12 +20,13 @@
       
             <nav id="navbar" class="navbar order-last order-lg-0">
               <ul>
-                  <li><a class="nav-link scrollto" (click)="perfil()">Mi perfil</a></li>
-                  <li><a class="nav-link scrollto" (click)="misTurnos()">Mis turnos</a></li>
-                  <li><a class="nav-link scrollto" (click)="turnos()">Turnos</a></li>
-                  <li><a class="nav-link scrollto" (click)="solicitarTurno()">Solicitar turnos</a></li>
+                  <li><a class="nav-link scrollto shake-bottom" (click)="perfil()">Mi perfil</a></li>
+                  <li><a class="nav-link scrollto shake-bottom" (click)="misTurnos()">Mis turnos</a></li>
+                  <li><a class="nav-link scrollto shake-bottom" (click)="turnos()">Turnos</a></li>
+                  <li><a class="nav-link scrollto shake-bottom" (click)="solicitarTurno()">Solicitar turnos</a></li>
                   <!-- <li><a class="nav-link scrollto" >Gráficos y estadisticas</a></li> -->
-                  <li><a class="nav-link scrollto "(click)="seccionUsuarios()">Seccion usuarios</a></li>
+                  <li><a class="nav-link scrollto shake-bottom"(click)="seccionUsuarios()">Sección usuarios</a></li>
+                  <li><a class="nav-link scrollto shake-bottom"(click)="seccionPacientes()">Sección pacientes</a></li>
                 <li><a>
                   <!-- <div class="navbar-custom"> -->
                   <a class="user-color" (click)="toggleDropdown()" *ngIf="currentUser$ | async as user" >

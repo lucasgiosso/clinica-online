@@ -1,0 +1,41 @@
+<div class="background-container">
+    <div class="form-container" [ngClass]="{'slide-out-elliptic-top-bck': animateForm}">
+      <form [formGroup]="historiaClinicaForm" (ngSubmit)="onSubmit()" class="historia-clinica-form">
+        <div class="form-header">
+          <img src="assets/logo.png" alt="Logo de la clínica" class="logo">
+          <h2>Historia Clínica</h2>
+          <h4>Paciente: {{ pacienteNombre }} {{ pacienteApellido }}</h4>
+        </div>
+        <div class="form-group">
+          <label for="altura">Altura(en cm):</label>
+          <input id="altura" formControlName="altura" class="form-control">
+        </div>
+        <div class="form-group">
+          <label for="peso">Peso(kg):</label>
+          <input id="peso" formControlName="peso" class="form-control">
+        </div>
+        <div class="form-group">
+          <label for="temperatura">Temperatura:</label>
+          <input id="temperatura" formControlName="temperatura" class="form-control">
+        </div>
+        <div class="form-group">
+          <label for="presion">Presión(mm Hg):</label>
+          <input id="presion" formControlName="presion" class="form-control">
+        </div>
+        <div formArrayName="datosDinamicos" class="form-group">
+          <div *ngFor="let dato of datosDinamicos.controls; let i=index" [formGroupName]="i" class="dato-dinamico">
+            <label for="clave-{{i}}">Campo:</label>
+            <input id="clave-{{i}}" formControlName="clave" class="form-control">
+            <label for="valor-{{i}}">Valor:</label>
+            <input id="valor-{{i}}" formControlName="valor" class="form-control">
+          </div>
+        </div>
+        <button type="button" (click)="agregarDatoDinamico()" class="btn btn-secondary" [disabled]="datosDinamicos.length >= maxDatosDinamicos">Agregar dato adicional</button>
+        <button type="submit" [disabled]="historiaClinicaForm.invalid" class="btn btn-primary">Guardar historia clínica</button>
+      </form>
+      <div class="center-button">
+          <input type="button" [value]="btnVolver" class="btn-success" (click)="onClickHome($event)"/>
+        </div>
+    </div>
+  </div>
+  

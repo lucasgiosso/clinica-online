@@ -43,11 +43,9 @@
       <h3>Horarios Disponibles</h3>
       <ul>
         <li *ngFor="let horario of disponibilidad">
+          <!-- {{ formatDateTime(horario.dias[0], horario.horaInicio, horario.horaFin) }} -->
           {{ getDiasString(horario.dias) }} - {{ horario.horaInicio }} a {{ horario.horaFin }}
-          <button 
-          [class.active]="editandoHorario === horario" 
-          (click)="modificarHorario(horario)" 
-          >Modificar</button>
+          <button [class.active]="editandoHorario === horario" (click)="modificarHorario(horario)">Modificar</button>
 
           <button 
           type="button" class="botonCancelar"

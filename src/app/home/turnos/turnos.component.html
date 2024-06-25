@@ -48,7 +48,7 @@
             <th>Apellido Especialista</th>
             <th>Especialidad</th>
             <th>Fecha</th>
-            <th>Hora</th>
+            <th>Horario</th>
             <th>Estado</th>
             <th *ngIf="tieneTurnoCancelado">Motivo</th>
             <th>Acciones</th>
@@ -58,8 +58,8 @@
           <tr *ngFor="let turno of turnosFiltrados | filter: filtro">
             <td>{{ turno.paciente.nombre }}</td>
             <td>{{ turno.paciente.apellido }}</td>
-            <td>{{ turno.especialistas.nombre }}</td>
-            <td>{{ turno.especialistas.apellido }}</td>
+            <td>{{ turno.especialista.nombre }}</td>
+            <td>{{ turno.especialista.apellido }}</td>
             <td>
               <ng-container *ngIf="especialidadesPrecargadas.includes(turno.especialidad); else otraEspecialidad">
                 {{ turno.especialidad }}
@@ -69,7 +69,7 @@
               </ng-template>
             </td>
             <td>{{ turno.fechaHora | date:'dd/MM/yy' }}</td>
-            <td>{{ turno.horario }}</td>
+            <td>{{ turno.horaInicio }} - {{ turno.horaFin }}</td>
             <td>{{ turno.estado }}</td>
             <ng-container *ngIf="turno.estado === 'cancelado'">
                 <td>{{ turno.motivoCancelacion }}</td>

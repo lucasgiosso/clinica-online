@@ -1,0 +1,37 @@
+<div class="pacientes-atendidos-container">
+  <h2>Pacientes Atendidos</h2>
+  <div *ngIf="usuarioLogueado && usuarioLogueado.role === 'especialista'; else noEspecialista">
+    <div class="table-responsive">
+      <table class="table table-bordered">
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Apellido</th>
+            <th>Mail</th>
+            <th>Fecha</th>
+            <th>Historia clínica</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let paciente of pacientes">
+            <td>{{ paciente.nombre }}</td>
+            <td>{{ paciente.apellido }}</td>
+            <td>{{ paciente.mail }}</td>
+            <td>{{ paciente.fechaHora | date: 'dd-MM-yy' }}</td>
+           <button *ngIf="historiasClinicasExist[paciente.id]" (click)="verHistoriaClinica(paciente.id)" [ngClass]="{'custom-enabled-button': true}">
+              Ver historia clínica
+            </button>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="center-button">
+    <input type="button" [value]="btnVolver" class="btn-success" (click)="onClickHome($event)"/>
+  </div>
+  
+  <ng-template #noEspecialista>
+    <p>No tienes permisos para ver esta sección.</p>
+  </ng-template>
+</div>

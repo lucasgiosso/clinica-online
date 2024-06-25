@@ -40,7 +40,7 @@ export const routes: Routes = [
     {
         path: 'home/perfil',
         loadComponent: () => import('./home/perfil/perfil.component').then(m => m.PerfilComponent),
-        canActivate: [especialistaGuard]
+        canActivate: [pacienteEspecialistaGuard]
     },
     {
         path: 'home/solicitar-turno',
@@ -51,5 +51,23 @@ export const routes: Routes = [
         path: 'home/turnos',
         loadComponent: () => import('./home/turnos/turnos.component').then(m => m.TurnosComponent),
         canActivate: [adminGuard]
+    },
+  
+    {
+        path: 'historia-clinica',
+        loadComponent: () => import('./historia-clinica/historia-clinica.component').then(m => m.HistoriaClinicaComponent),
+        
+    },
+
+    {
+        path: 'historia-clinica/:pacienteId',
+        loadComponent: () => import('./historia-clinica/historia-clinica.component').then(m => m.HistoriaClinicaComponent),
+        
+    },
+
+    {
+        path: 'home/seccion-pacientes',
+        loadComponent: () => import('./home/seccion-paciente/seccion-paciente.component').then(m => m.SeccionPacienteComponent),
+        
     },
 ];
