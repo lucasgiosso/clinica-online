@@ -1,8 +1,9 @@
-import { Injectable } from '@angular/core';
+import { Injectable, OnInit } from '@angular/core';
 import { Firestore, collection, addDoc, getDocs, query, where, CollectionReference, DocumentData, doc, getDoc, QuerySnapshot, DocumentReference, collectionData, setDoc, docData, updateDoc, collectionGroup, Timestamp, DocumentSnapshot } from '@angular/fire/firestore';
 import { Observable, catchError, combineLatest, forkJoin, from, map, mergeMap, of, switchMap } from 'rxjs';
 import { PacienteService } from '../services/paciente.service';
 import { EspecialistaService, Horario } from './especialista.service';
+import { FormControl } from '@angular/forms';
 
 
 export interface Turno {
@@ -38,6 +39,7 @@ export interface Turno {
   motivoRechazo?: string;
   calificacionCompletada?: boolean;
   comentarioCalificacion?: string;
+  historiaClinicaCargada?: boolean;
 }
 
 export interface TurnoDisponible {
@@ -64,20 +66,32 @@ export interface HistoriaClinica {
   datosDinamicos?: Array<{ clave: string, valor: string }>;
   fecha: Date;
   especialistaId: string;
+  turnoId?: string;
+  especialistaNombre?: string;
+  especialistaApellido?: string;
+  pacienteId: string;
 }
 
 
 @Injectable({
   providedIn: 'root'
 })
-export class TurnosService {
+export class TurnosService implements OnInit{
 
   private turnos: any[] = [];
   private turnosCollection: CollectionReference<DocumentData>;
+  turnos$: Observable<any[]> = of([]);
+  searchControl: FormControl = new FormControl();
 
   constructor(private firestore: Firestore, private pacienteService: PacienteService, private especialistaService: EspecialistaService) {
     this.turnosCollection = collection(this.firestore, 'turnos');
    }
+
+   ngOnInit() {
+    this.searchControl.valueChanges.subscribe(searchTerm => {
+      this.turnos$ = this.searchTurnosByHistoriaClinica(searchTerm);
+    });
+  }
 
 
   obtenerTurnosPorPaciente(pacienteMail: string): Observable<any[]> {
@@ -108,7 +122,7 @@ export class TurnosService {
       }),
       catchError(error => {
         console.error('Error al obtener el turno por ID:', error);
-        throw error; // Lanza el error para ser manejado por el componente
+        throw error; 
       })
     );
   }
@@ -330,30 +344,6 @@ export class TurnosService {
     return updateDoc(turnoDocRef, { comentarioCalificacion, calificacionCompletada: true });
   }
 
-  // async obtenerTurnosDisponiblesPorEspecialistaYFecha(especialista: string, fecha: Date): Promise<string[]> {
-  //   try {
-  //     const turnosQuery = query(
-  //       this.turnosCollection,
-  //       where('especialista', '==', especialista),
-  //       where('fecha', '==', fecha),
-  //       where('estado', '==', 'pendiente')
-  //     );
-  
-  //     const querySnapshot: QuerySnapshot<any> = await getDocs(turnosQuery);
-  
-  //     const turnosDisponibles: string[] = [];
-  //     querySnapshot.forEach((doc) => {
-  //       const turno = doc.data() as Turno;
-  //       turnosDisponibles.push(turno.horario);
-  //     });
-  
-  //     return turnosDisponibles;
-  //   } catch (error) {
-  //     console.error('Error al obtener turnos disponibles:', error);
-  //     throw new Error('Error al obtener turnos disponibles en Firestore.');
-  //   }
-  // }
-
   obtenerTurnosPorEspecialista(especialistaId: string): Observable<Turno[]> {
     const turnosCollectionRef = collection(this.firestore, 'turnos');
     const q = query(turnosCollectionRef, where('especialistaId', '==', especialistaId));
@@ -462,5 +452,46 @@ export class TurnosService {
       })
     );
   }
+
+  // getPacientesAtendidosPorEspecialista(especialistaId: string): Observable<any[]> {
+  //   const turnosCollection = collection(this.firestore, 'turnos');
+  //   const turnosQuery = query(turnosCollection, where('especialistaId', '==', especialistaId));
+
+  //   return from(getDocs(turnosQuery)).pipe(
+  //     map(snapshot => {
+  //       const pacientesIds = snapshot.docs.map(doc => doc.data()['pacienteId']);
+  //       // Aquí deberías implementar la lógica para obtener los datos de los pacientes basándose en los IDs obtenidos
+  //       // Suponiendo que tienes un método getPacientesByIds que toma una lista de IDs y devuelve la información de los pacientes
+  //       return this.getPacientesByIds(pacientesIds);
+  //     })
+  //   );
+  // }
+
+  
+
+  getTurnosPorPacienteYEspecialista(pacienteId: string, especialistaId: string): Observable<any[]> {
+    const turnosCollection = collection(this.firestore, 'turnos');
+    const turnosQuery = query(turnosCollection, where('pacienteId', '==', pacienteId), where('especialistaId', '==', especialistaId));
+
+    return from(getDocs(turnosQuery)).pipe(
+      map(snapshot => {
+        return snapshot.docs.map(doc => doc.data());
+      })
+    );
+  }
+
+  searchTurnosByHistoriaClinica(searchTerm: string): Observable<any[]> {
+    const turnosCollectionRef = collection(this.firestore, 'turnos');
+    const q = query(turnosCollectionRef, where('historiaClinica.diagnostico', '>=', searchTerm), where('historiaClinica.diagnostico', '<=', searchTerm + '\uf8ff'));
+
+    return collectionData(q, { idField: 'id' }).pipe(
+      map(turnos => {
+        // Filtrar más si es necesario, basándote en otros campos
+        return turnos.filter(turno => turno['historiaClinica'] && turno['historiaClinica'].diagnostico.includes(searchTerm));
+      })
+    );
+  }
+
+  
   
 }

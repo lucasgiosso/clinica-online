@@ -7,19 +7,11 @@ import { format, parse } from 'date-fns';
 })
 export class FormatoHoraPipe implements PipeTransform {
 
-  transform(hora: string): string {
-    try {
-      const parsedTime = parse(hora, 'HH:mm', new Date());
-
-      if (isNaN(parsedTime.getTime())) {
-        throw new Error('Hora inválida');
-      }
-
-      return format(parsedTime, 'h:mm a');
-    } catch (error) {
-      console.error('Error al formatear la hora:', error, hora);
-      return hora;
-    }
+  transform(value: string): string {
+    const [hours, minutes] = value.split(':').map(Number);
+    const period = hours >= 12 ? 'PM' : 'AM';
+    const formattedHours = hours % 12 || 12;
+    return `${formattedHours}:${minutes.toString().padStart(2, '0')} ${period}`;
   }
 
 }

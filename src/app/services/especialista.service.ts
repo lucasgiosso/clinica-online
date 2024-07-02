@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { CollectionReference, DocumentData, DocumentReference, Firestore, QuerySnapshot, Timestamp, collection, doc, getDoc, getDocs, query, updateDoc, where } from '@angular/fire/firestore';
+import { CollectionReference, DocumentData, DocumentReference, Firestore, QuerySnapshot, Timestamp, collection, collectionData, doc, getDoc, getDocs, query, updateDoc, where } from '@angular/fire/firestore';
 import { BehaviorSubject, Observable, catchError, from, map, throwError } from 'rxjs';
 import { Auth } from '@angular/fire/auth';
 import { addDays, format, startOfTomorrow } from 'date-fns';
@@ -28,9 +28,55 @@ export class EspecialistaService {
 
 
   constructor(private auth: Auth, private firestore: Firestore){
-
+   
     this.turnosCollection = collection(this.firestore, 'turnos');
     this.cargarDisponibilidad();
+  }
+
+  obtenerEspecialistasDatos(): Observable<{ id: string, nombre: string, apellido: string, imagenPerfil: string, especialidades: string[] }[]> {
+    const especialistasCollection = collection(this.firestore, 'DatosUsuarios');
+    return collectionData(especialistasCollection, { idField: 'id' }).pipe(
+      map((especialistas: any[]) => especialistas.filter(especialista => especialista.role === 'especialista').map(especialista => ({
+        id: especialista.id,
+        nombre: especialista.nombre,
+        apellido: especialista.apellido,
+        imagenPerfil: especialista.imagenPerfil,
+        especialidades: especialista.especialidad ? [especialista.especialidad] : []
+      }))),
+      catchError(error => {
+        console.error('Error al obtener especialistas:', error);
+        return throwError(error);
+      })
+    );
+  }
+
+  getEspecialistas(): Observable<{ id: string, nombre: string, apellido: string, imagenPerfil: string, especialidades: string[] }[]> {
+    const especialistasCollection = collection(this.firestore, 'DatosUsuarios');
+    return collectionData(especialistasCollection, { idField: 'id' }).pipe(
+      map((especialistas: any[]) => especialistas.filter(especialista => especialista.role === 'especialista')),
+      catchError(error => {
+        console.error('Error al obtener especialistas:', error);
+        return throwError(error);
+      })
+    );
+  }
+
+  obtenerEspecialidadesPorEspecialista(especialistaId: string): Observable<string[]> {
+    const especialistaDocRef = doc(this.firestore, `DatosUsuarios/${especialistaId}`);
+    return from(getDoc(especialistaDocRef)).pipe(
+      map(docSnap => {
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          return Array.isArray(data['especialidad']) ? data['especialidad'] : [data['especialidad']];
+        } else {
+          throw new Error(`No se encontró información para el especialista con ID ${especialistaId}`);
+        }
+      }),
+      catchError(error => {
+        console.error(`Error al obtener especialidades del especialista:`, error);
+        return throwError(error);
+      })
+    );
   }
 
   getEspecialistaInfo(especialistaId: string): Observable<{ mail: string, nombre: string, apellido: string }> {
@@ -45,7 +91,8 @@ export class EspecialistaService {
           return {
             mail: data['mail'],
             nombre: data['nombre'],
-            apellido: data['apellido']
+            apellido: data['apellido'],
+            especialidad: data['especialidad']
           };
         } else {
           throw new Error(`No se encontró información para el especialista con ID ${especialistaId}`);

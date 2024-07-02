@@ -23,49 +23,51 @@
         <option *ngFor="let paciente of pacientes" [value]="paciente.email">{{ paciente.nombre }} {{ paciente.apellido }}</option>
       </select>
     </ng-container>
-    
-    <div class="centered-content">
+
+    <ng-container>
+      <div class="centered-content">
+      <label for="especialista">Seleccione un especialista:</label>
+ 
+      <div class="especialistas-container">
+       <button type="button" class="especialistas-boton-cuadrado"  *ngFor="let especialista of especialistas" (click)="onEspecialistaButtonClick(especialista)" [class.selected]="especialista === especialistaSeleccionado">
+         <p>{{ especialista.nombre }} {{ especialista.apellido }}</p>
+         <img [src]="especialista.imagenPerfil" alt="{{ especialista.imagenPerfil }}" class="especialidad-image">
+         <img [src]="getSafeImageURL(especialista.imagenPerfil)" alt="{{ especialista.nombre }}"  class="especialidad-button">
+       </button>
+     </div>
+    </div>
+   </ng-container>
+
+    <div class="centered-content" *ngIf="especialistaSeleccionado" >
 
       <label for="especialidad">Seleccione su especialidad:</label>
 
     <div class="especialidades-container">
-      <button type="button" class="especialistas-boton-cuadrado"  *ngFor="let especialista  of especialidades; let i = index" (click)="toggleEspecialidad(i)" (click)="onEspecialidadChange(especialista )" (click)="onEspecialidadButtonClick(especialista )" [class.selected]="especialista  === seleccionado">
-        <p>{{ especialista  }}</p>
-        <img [src]="obtenerImagenEspecialidad(especialista )" alt="{{ especialista  }}" class="especialidad-button">
+      <button type="button"  *ngFor="let especialidad  of especialidades"  (click)="onEspecialidadButtonClick(especialidad)" [class.selected]="especialidad === especialidadActual">
+        <p>{{ especialidad === 'otra' ? especialistaSeleccionado.otraEspecialidad : especialidad }}</p>
+        <img [src]="obtenerImagenEspecialidad(especialidad)" [appSinImagen] alt="{{ especialidad }}" class="especialidad-button1">
       </button>
     </div>
 
-    
-    <ng-container *ngIf="especialidadSeleccionada">
-
-     <label for="especialista">Seleccione un especialista:</label>
-
-     <div class="especialistas-container">
-      <button type="button" *ngFor="let especialista of especialistas" (click)="onEspecialidadButtonClick1(especialista)" [class.selected]="especialista === especialistaSeleccionado">
-        <p>{{ especialista.nombre }} {{ especialista.apellido }}</p>
-        <img [src]="especialista.imagenPerfil" alt="{{ especialista.imagenPerfil }}" class="especialidad-image">
-        <img [src]="getSafeImageURL(especialista.imagenPerfil)" alt="{{ especialista.nombre }}"  class="especialidad-button1">
-      </button>
-    </div>
-  </ng-container>
-    
-    <ng-container *ngIf="especialistaSeleccionado && turnosDisponibles.length > 0">
+        
+    <ng-container *ngIf="especialidadActual && turnosDisponibles.length > 0">
       <h3>Turnos Disponibles</h3>
       <ul>
         <div class="horarios-container">
 
-        <button type="button" 
+          <button type="button" 
           *ngFor="let turno of turnosDisponibles"
           [disabled]="isTurnoOcupado(turno)"
           [class.turno-disponible]="!turno.ocupado && turno !== turnoSeleccionado"
           [class.turno-ocupado]="turno.ocupado"
           [class.turno-seleccionado]="turno === turnoSeleccionado"
           (click)="onTurnoSeleccionado(turno)">
-    <div class="fecha-hora">
-      <span>{{ turno.dias[0] | formatoFechaHora }}</span>
-      <span>{{ turno.horaInicio | formatoHora }} - {{ turno.horaFin | formatoHora }}</span>
-    </div>
-  </button>
+          <div class="fecha-hora">
+            <span>{{ turno.dias[0] }}</span>
+            <span>{{ turno.horaInicio | formatoHora }} - {{ turno.horaFin | formatoHora }}</span>
+          </div>
+        </button>
+        
         </div>
       </ul>
     </ng-container>

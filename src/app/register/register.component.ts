@@ -37,7 +37,8 @@ export class RegisterComponent {
   btnVolver = 'Iniciar sesión';
   btnVolverBien = 'Volver a inicio';
   selectedRole: string = '';
-  mostrarOtraEspecialidad: boolean = true;
+  //mostrarOtraEspecialidad: boolean = true;
+  showOtraEspecialidad = false;
   showLoading: boolean = true;
   showCaptcha: boolean = false;
   imagenPerfil: File | null = null;
@@ -68,7 +69,7 @@ export class RegisterComponent {
       email: new FormControl('', [Validators.email, Validators.required]),
       password: new FormControl('', [Validators.required, Validators.minLength(6)]),
       confirmPassword: new FormControl('', [Validators.required]),
-      especialidad: new FormControl('', [Validators.required] ),
+      especialidad: new FormControl([], [Validators.required] ),
       otraEspecialidad: new FormControl('', [Validators.required, Validators.minLength(4), Validators.maxLength(25), Validators.pattern(/^[a-zA-Z\s]+$/)]),
       imagenPerfil: new FormControl('', [Validators.required,]),
       imagenPerfil1: new FormControl('', [Validators.required]),
@@ -105,7 +106,7 @@ export class RegisterComponent {
         })
       ).subscribe();
     }
-    
+       
   
     this.loadCaptchaImage();
 
@@ -113,8 +114,8 @@ export class RegisterComponent {
       recaptcha: ['', Validators.required]
     });
 
-    this.sitekey = "6LdyXPApAAAAALSAmf8NwgdYpEsRkXOg-r8nqMBk"; // QA
-    //this.sitekey = "6LeFXPApAAAAAFW3JDnfsZ_J_f4e6fRn7cmPQb7f"; // PROD
+    //this.sitekey = "6LdyXPApAAAAALSAmf8NwgdYpEsRkXOg-r8nqMBk"; // QA
+    this.sitekey = "6LeFXPApAAAAAFW3JDnfsZ_J_f4e6fRn7cmPQb7f"; // PROD
 
     setTimeout(() => {
     this.showLoading = false;
@@ -129,6 +130,19 @@ marcarTodosTocados() {
       control.markAsTouched();
     }
   });
+}
+
+
+onEspecialidadChange(event: Event): void {
+  const selectElement = event.target as HTMLSelectElement;
+  const selectedOptions = Array.from(selectElement.selectedOptions).map(option => option.value);
+  this.showOtraEspecialidad = selectedOptions.includes('otra');
+  if (this.showOtraEspecialidad) {
+    this.formReg.get('otraEspecialidad')?.setValidators([Validators.required]);
+  } else {
+    this.formReg.get('otraEspecialidad')?.clearValidators();
+  }
+  this.formReg.get('otraEspecialidad')?.updateValueAndValidity();
 }
 
 

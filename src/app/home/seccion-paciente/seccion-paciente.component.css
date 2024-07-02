@@ -1,13 +1,24 @@
-/* seccion-paciente.component.css */
 
 body {
-    background-color: #f0f2f5; /* Color de fondo suave */
-  }
+  background-color: #dddbdb;
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  font-family: "Euclid Circular A", "Poppins";
+}
+
+.main-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 88vh;
+ 
+}
   
   .pacientes-atendidos-container {
     margin: 0 auto;
     padding: 20px;
-    max-width: 1200px;
+    max-width: 100vh;
     background-color: #fff;
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
@@ -41,7 +52,7 @@ body {
   }
   
   .table th {
-    background-color: #343a40;
+    background-color: #007bff;
     color: white;
   }
   
@@ -104,12 +115,14 @@ body {
     cursor: not-allowed;
   }
 
+
   .btn-success {
     background-color: #a72892;
     color: #fff;
     border: none;
     padding: 10px 20px;
     margin: 28px;
+    
     border-radius: 5px;
     font-size: 18px;
     font-weight: bold;
@@ -127,4 +140,337 @@ body {
     align-items: center;
     /* margin-top: 5px; */
   }
+  
+  .centered-loading {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(255, 255, 255, 0.7);
+    z-index: 9999;
+  }
+
+  /* .pacientes-list {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: 20px;
+  }
+  
+  .paciente-card {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    overflow: hidden;
+    width: 150px;
+    margin: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    background-color: #fff;
+    text-align: center;
+    position: relative;
+    padding: 10px;
+  }
+  
+  .paciente-imagen {
+    width: 100%;
+    height: 100px;
+    object-fit: cover;
+  }
+  
+  .paciente-card h3 {
+    margin: 10px 0;
+  }
+  
+  button[mat-fab] {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+  }
+  
+  .paciente-detalle {
+    margin-top: 20px;
+  }
+  
+  .paciente-detalle h3, .paciente-detalle p, .paciente-detalle ul {
+    text-align: left;
+  } */
+
+  .centered-loading {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(255, 255, 255, 0.7);
+    z-index: 9999;
+  }
+  
+  .navbar-custom {
+    position: fixed;
+    top: 0; 
+    right: 0; 
+    padding: 10px 20px;
+    z-index: 1000;
+    margin-right: 250px;
+    display: flex;
+    align-items: center;
+    font-family: "Euclid Circular A", "Poppins";
+  }
+
+  .navbar-custom a{
+    color: #000;
+    text-decoration: none;
+    cursor: pointer;
+    display: flex; 
+    align-items: center;
+  }
+
+  .user-photo{
+    width: 2rem;
+    min-width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    margin-right: 0.5rem;
+  }
+
+  .fa-solid fa-power-off{
+    color: #000;
+    width: 5rem;
+    min-width: 5rem;
+    height: 5rem;
+  }
+
+  .logout-button{
+    margin-left: auto;
+    cursor: pointer;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    background-color: transparent;
+    border: none;
+    color: #000;
+    display: flex; 
+    align-items: center;
+    position: relative;
+    font-family: "Euclid Circular A", "Poppins";
+
+    i.fa {
+        font-size: 1.5rem; 
+        margin-right: 0.5rem; 
+
+      }
+  }
+
+  .dropdown-content {
+    position: absolute;
+    top: calc(65% + 10px);
+    right: 0;
+    text-align: center;
+    border-radius: 0.313rem; 
+    padding: 0.2rem; 
+    min-width: 10rem; 
+  
+    button {
+      width: 100%;
+      border: none;
+      background: transparent;
+      color: #000;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      padding: 0.5rem 0;
+      transition: background-color 0.3s;
+    }
+
+  }
+
+  .logout-button:hover + .dropdown-content {
+    display: block;
+  }
+
+
+  .pacientes-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: auto;
+    padding: 20px;
+    border-radius: 8px;
+  }
+  
+  .pacientes-container h2 {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  
+  .pacientes-list {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px; /* Espacio entre los botones */
+  }
+  
+  .paciente-card {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 15px;
+  }
+  
+  .info-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    padding: 20px;
+    text-align: center;
+    width: 120px;
+    height: 120px;
+  }
+  
+  .paciente-avatar img {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+  }
+  
+  .paciente-details {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 10px;
+  }
+  
+  .paciente-name {
+    font-weight: bold;
+    margin: 0;
+  }
+
+
+
+  .container1 {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    padding: 20px;
+  }
+  
+  .button-container1 {
+    display: flex;
+    justify-content: flex-start;
+    width: 100%;
+    margin-bottom: 20px;
+  }
+  
+  mat-card {
+    width: 300px;
+    margin: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    background-color: #7d8cc4;
+  }
+  
+  mat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  }
+  
+  mat-card-title {
+    font-size: 1.5em;
+    font-weight: bold;
+    color: #fff;
+    
+  }
+  
+  mat-card-content {
+    font-size: 1em;
+    color: #fff;
+  }
+  
+  mat-card-content p {
+    margin: 10px 0;
+  }
+  
+  button {
+    background-color: #ffffff;
+    color: rgb(0, 0, 0);
+  }
+
+  
+  button:hover {
+    background-color: #3700b3;
+    color: rgb(255, 255, 255);
+  }
+  
+  .ver-resena-button {
+    color: #6200ea;
+    cursor: pointer;
+    text-decoration: underline;
+  }
+  
+  .ver-resena-button:hover {
+    color: #3700b3;
+  }
+  
+  .mat-card-content p.ver-resena-button {
+    margin: 10px 0;
+  }
+  
+  .mat-card-title {
+    margin-bottom: 10px;
+    color: #3f51b5;
+
+  }
+  
+  .mat-card-content p {
+    color: #757575;
+  }
+  
+  .mat-card {
+    border-radius: 8px;
+  }
+
+  .mat-card p{
+   margin-left: 45px;
+  }
+  
+  .mat-card-content {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: space-between;
+  }
+  
+  .mat-card-content p {
+    margin: 5px 0;
+  }
+  
+  .mat-card-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .mat-card-content p {
+    margin: 5px 0;
+  }
+
+  .btnRes{
+    margin-left: 80px;
+  }
+
+  .pCenter{
+    margin-left: 80px;
+  }
+
+ 
+
   

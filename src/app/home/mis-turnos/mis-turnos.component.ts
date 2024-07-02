@@ -1,16 +1,17 @@
 import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { Router } from '@angular/router';
-import { Observable, catchError, of, switchMap } from 'rxjs';
+import { Observable, catchError, combineLatest, map, of, switchMap } from 'rxjs';
 import { AuthService } from '../../services/auth.service';
 import Swal from 'sweetalert2';
 import { Auth,User } from '@angular/fire/auth';
-import { Turno, TurnosService } from '../../services/turnos.service';
+import { HistoriaClinica, Turno, TurnosService } from '../../services/turnos.service';
 import { CommonModule } from '@angular/common';
 import { FilterEspPipe } from "../../pipes/filter-esp.pipe";
 import { LoadingComponent } from "../../loading/loading.component";
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { FilterPipe } from "../../pipes/filter.pipe";
-import { Timestamp } from '@angular/fire/firestore';
+import { Timestamp  } from '@angular/fire/firestore';
+import { HistoriaClinicaService } from '../../services/historia-clinica.service';
 
 @Component({
     selector: 'app-mis-turnos',
@@ -62,10 +63,12 @@ export class MisTurnosComponent implements OnInit{
   tieneTurnoRechazado: boolean = false;
   userRole: string | null = null;
   animate = false;
+  usuarioLogueado: string = '';
+  searchText: string = '';
 
   turnos$: Observable<any[]> = new Observable<any[]>();;
   
-  constructor (private router: Router, private authService: AuthService, private turnosService: TurnosService, private auth: Auth) {
+  constructor (private router: Router, private authService: AuthService, private turnosService: TurnosService, private auth: Auth, private historiaClinicaService: HistoriaClinicaService) {
     this.currentUser$ = this.authService.getCurrentUser();
     this.selectedYear = 0; 
     this.selectedMonth = 0;
@@ -108,6 +111,7 @@ export class MisTurnosComponent implements OnInit{
       console.log('Turnos fetched:', turnos);
     });
   }
+
 
   public onClickHome(event: any): void 
   {
@@ -396,11 +400,14 @@ export class MisTurnosComponent implements OnInit{
   cargarHistoriaClinica(turno: Turno) {
     const turnoId = turno.id;
     const pacienteEmail = turno.paciente.mail;
+    const fechaTurno = turno.fechaHora;
+    turno.historiaClinicaCargada = true;
   
     this.authService.getUserByEmail(pacienteEmail).subscribe(paciente => {
       if (paciente && paciente.id) {
         const pacienteId = paciente.id;
-        this.router.navigate(['/historia-clinica', { turnoId: turnoId, pacienteId: pacienteId }]);
+        this.router.navigate(['/historia-clinica', { turnoId: turnoId, pacienteId: pacienteId, fechaTurno: fechaTurno  }]);
+
       } else {
         console.error('No se pudo encontrar la información del paciente.');
       }

@@ -46,7 +46,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let turno of turnos | filterEsp: filtro" [ngClass]="{'hidden': !turno.especialista}">
+          <tr *ngFor="let turno of turnos | filterEsp:filtro" [ngClass]="{'hidden': !turno.especialista}">
             <td>{{ turno.especialista.nombre }}</td>
             <td>{{ turno.especialista.apellido }}</td>
             <td>
@@ -66,6 +66,20 @@
             <ng-container *ngIf="turno.estado !== 'cancelado' && tieneTurnoCancelado">
               <td></td>
             </ng-container>
+            <!-- <td>
+              <ng-container *ngIf="turno.historiaClinica">
+                <p><strong>Altura:</strong> {{ turno.historiaClinica.altura }} cm</p>
+                <p><strong>Peso:</strong> {{ turno.historiaClinica.peso }} kg</p>
+                <p><strong>Temperatura:</strong> {{ turno.historiaClinica.temperatura }} °C</p>
+                <p><strong>Presión:</strong> {{ turno.historiaClinica.presion }} mm Hg</p>
+                <div *ngFor="let dato of turno.historiaClinica.datosDinamicos">
+                  <p><strong>{{ dato.clave }}:</strong> {{ dato.valor }}</p>
+                </div>
+              </ng-container>
+              <ng-container *ngIf="!turno.historiaClinica">
+                <p>No disponible</p>
+              </ng-container>
+            </td> -->
             <td>
                 <button *ngIf="turno.estado === 'pendiente'" (click)="cancelarTurno(turno)">Cancelar Turno</button>
                 <button *ngIf="turno.estado === 'cancelado'" class="disabled-button" disabled>Cancelado</button>
@@ -101,7 +115,7 @@
               <td>{{ turno.fechaHora | date:'dd/MM/yy' }}</td>
               <td>{{ turno.horaInicio }} - {{ turno.horaFin }}</td>
               <td>{{ turno.estado }}</td>
-              <ng-container *ngIf="turno.estado === 'cancelado' || 'rechazado' ">
+              <ng-container *ngIf="turno.estado === 'cancelado' || turno.estado === 'rechazado' ">
                 <td>{{ turno.motivoCancelacion || turno.motivoRechazo }}</td>
               </ng-container>
               <ng-container *ngIf="turno.estado !== 'cancelado' && tieneTurnoCancelado || turno.estado !== 'rechazado' && tieneTurnoRechazado"></ng-container>
@@ -114,8 +128,8 @@
                 <button *ngIf="turno.estado === 'rechazado'" class="disabled-button" disabled>Rechazado</button>
                 <button *ngIf="turno.estado === 'aceptado'" (click)="finalizarTurno(turno)">Finalizar Turno</button>
                 <button *ngIf="turno.estado === 'realizado'" class="disabled-button" disabled>Finalizado</button>
-                <button *ngIf="turno.estado === 'realizado'" (click)="cargarHistoriaClinica(turno)">Cargar historia clínica</button>
-                <button *ngIf="turno.estado === 'realizado'" class="disabled-button" disabled>HC cargada</button>
+                <button *ngIf="turno.estado === 'realizado'&& !turno.historiaClinicaCargada"  (click)="cargarHistoriaClinica(turno)">Cargar historia clínica</button>
+                <button *ngIf="turno.estado === 'realizado'&& turno.historiaClinicaCargada" class="disabled-button" disabled>Historia clínica cargada</button>
                 <button *ngIf="turno.estado === 'realizado' && turno.comentario" (click)="verResena(turno)">Ver Reseña</button>
               </td>
             </tr>

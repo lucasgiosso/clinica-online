@@ -7,26 +7,9 @@ import { format, isValid, parse } from 'date-fns';
 })
 export class FormatoFechaPipe implements PipeTransform {
 
-  transform(fecha: string): string {
-    try {
-
-      const partes = fecha.split(' ');
-      if (partes.length > 1) {
-        partes.shift();
-      }
-      const datePart = partes.join(' ');
-
-      const parsedDate = parse(datePart, 'dd-MM-yyyy', new Date());
-
-      if (!isValid(parsedDate)) {
-        throw new Error('Fecha inválida');
-      }
-
-      return format(parsedDate, 'yyyy-MM-dd');
-    } catch (error) {
-      console.error('Error al formatear la fecha:', error, fecha);
-      return fecha; // Devuelve la fecha original en caso de error
-    }
+  transform(value: Date | string): string {
+    const date = typeof value === 'string' ? new Date(value) : value;
+    return format(date, 'yyyy-MM-dd');
   }
 
 }

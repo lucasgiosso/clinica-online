@@ -68,6 +68,12 @@ export const routes: Routes = [
     {
         path: 'home/seccion-pacientes',
         loadComponent: () => import('./home/seccion-paciente/seccion-paciente.component').then(m => m.SeccionPacienteComponent),
-        
+        canActivate: [especialistaGuard]
+    },
+
+    {
+        path: 'estadisticas',
+        loadComponent: () => import('./estadisticas/estadisticas.component').then(m => m.EstadisticasComponent),
+        canActivate: [adminGuard]
     },
 ];

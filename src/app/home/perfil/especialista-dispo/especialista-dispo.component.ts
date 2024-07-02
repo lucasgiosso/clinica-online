@@ -1,11 +1,13 @@
 import { Component } from '@angular/core';
 import { EspecialistaService, Horario } from '../../../services/especialista.service';
 import { FormArray, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Subject } from 'rxjs';
+import { Observable, Subject } from 'rxjs';
 import Swal from 'sweetalert2';
 import { CommonModule } from '@angular/common';
 import { TurnoDisponible, TurnosService } from '../../../services/turnos.service';
 import { format } from 'date-fns';
+import { Auth, User } from '@angular/fire/auth';
+import { AuthService } from '../../../services/auth.service';
 
 @Component({
   selector: 'app-especialista-dispo',
@@ -22,8 +24,11 @@ export class EspecialistaDispoComponent {
   mostrarBotonGuardar = true;
   horasDisponibles: string[] = [];
   editandoHorario: Horario | null = null;
+  especialidades: string[] = [];
+  currentUser$: Observable<User | null>;
 
-  constructor(private fb: FormBuilder, public especialistaService: EspecialistaService, private turnosService: TurnosService) {
+  constructor(private fb: FormBuilder, public especialistaService: EspecialistaService, private turnosService: TurnosService, private authService: AuthService) {
+    
     this.disponibilidadForm = this.fb.group({
       id: [''],
       especialidad: ['', Validators.required],
@@ -31,9 +36,28 @@ export class EspecialistaDispoComponent {
       horaInicio: ['', Validators.required],
       horaFin: ['', Validators.required],
     });
+
+    this.currentUser$ = this.authService.getCurrentUser();
   }
 
   ngOnInit() {
+
+    this.currentUser$.subscribe(user => {
+      if (user) {
+        this.especialistaService.obtenerEspecialistasDatos().subscribe((especialistas: { id: string, nombre: string, apellido: string, imagenPerfil: string, especialidades: string[] }[]) => {
+          const especialistaLogueado = especialistas.find(especialista => especialista.id === user.uid);
+          if (especialistaLogueado) {
+            this.especialidades = especialistaLogueado.especialidades;
+          } else {
+            console.error('No se encontró al especialista logueado en la base de datos.');
+          }
+        });
+      } else {
+        console.error('No hay un usuario autenticado.');
+      }
+    });
+  
+  
 
     this.especialistaService.disponibilidad$.subscribe((horarios) => {
       this.horariosDisponibles = horarios;

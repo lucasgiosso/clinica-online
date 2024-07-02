@@ -1,14 +1,30 @@
+<body>
+  <app-loading *ngIf="showLoading" class="centered-loading"></app-loading>
+
+<div class="navbar-custom">
+  <a class="user-color" (click)="toggleDropdown()" class="user-photo" *ngIf="currentUser$ | async as user" >
+      <img *ngIf="user.photoURL" src="{{user.photoURL}}" alt="Foto de perfil de usuario" class="user-photo">
+      <img *ngIf="!user.photoURL" src="https://firebasestorage.googleapis.com/v0/b/tp-sala-de-juegos-diazgiossol.appspot.com/o/guest.webp?alt=media&token=69e91e4a-832d-4439-ab69-a30e2c8d80ee"  class="user-photo">
+      {{ user.displayName?user.displayName : user.email }} 
+    </a>
+    <div class="dropdown-content" *ngIf="isDropdownOpen">
+      <button class="logout-button" *ngIf="showLogoutButton" (click)="logout()">
+        <i class="fa solid fa-power-off"></i> Cerrar Sesión
+      </button>
+    </div>
+  </div>
+  
+<!-- <div class="main-container">
 <div class="pacientes-atendidos-container">
   <h2>Pacientes Atendidos</h2>
-  <div *ngIf="usuarioLogueado && usuarioLogueado.role === 'especialista'; else noEspecialista">
-    <div class="table-responsive">
+  <div *ngIf="usuarioLogueado && usuarioLogueado.role === 'especialista'; else noEspecialista"> -->
+    <!-- <div class="table-responsive">
       <table class="table table-bordered">
         <thead>
           <tr>
             <th>Nombre</th>
             <th>Apellido</th>
             <th>Mail</th>
-            <th>Fecha</th>
             <th>Historia clínica</th>
           </tr>
         </thead>
@@ -17,21 +33,94 @@
             <td>{{ paciente.nombre }}</td>
             <td>{{ paciente.apellido }}</td>
             <td>{{ paciente.mail }}</td>
-            <td>{{ paciente.fechaHora | date: 'dd-MM-yy' }}</td>
            <button *ngIf="historiasClinicasExist[paciente.id]" (click)="verHistoriaClinica(paciente.id)" [ngClass]="{'custom-enabled-button': true}">
               Ver historia clínica
             </button>
           </tr>
         </tbody>
       </table>
+    </div> -->
+
+    <div class="pacientes-container">
+      <h2>Pacientes Atendidos</h2>
+    <div *ngIf="!selectedUser" class="pacientes-list">
+      <div *ngFor="let user of pacientes$ | async">
+        <button mat-fab color="primary" (click)="viewUserDetails(user.mail)" class="info-button">
+   
+            <div class="paciente-avatar">
+          <div *ngIf="user.imagenPerfil1">
+            <img mat-card-avatar [src]="user.imagenPerfil1" alt="{{ user.nombre }} Imagen 1">
+          </div>
+          <div class="paciente-details">
+            <p class="paciente-name">{{ user.nombre }}</p>
+        </div>
+        </div>
+            <mat-icon>info</mat-icon>
+          </button>
+      </div>
+    </div>
+    
+    <div *ngIf="selectedUser" class="container1">
+      <button mat-button (click)="clearSelection()">Volver</button>
+      <div class="button-container1">
+      <div *ngFor="let turno of turnos$ | async">
+        <mat-card>
+          <mat-card-title>{{ turno.especialidad }}</mat-card-title>
+          <mat-card-content>
+            <p class="pCenter">{{ turno.fechaHora | date: 'dd/MM/yy, h:mm a' }}</p>
+            <p>{{ turno.estado }}</p>
+            <button mat-button color="primary" class="btnRes" (click)="viewResena(turno)">Ver Reseña</button>
+            <!-- <button mat-button color="primary" class="btnRes" (click)="verHistoriaClinica3(turno)">Ver Historia Clínica</button> -->
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </div>
+   
+  <div *ngIf="selectedResena">
+    <mat-card class="resena-card">
+      <mat-card-title>Reseña de la Consulta</mat-card-title>
+      <mat-card-content>
+        <pre>{{ selectedResena }}</pre>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>
+
+<div *ngIf="selectedHistoriaClinica">
+  <mat-card class="historia-clinica-card">
+    <mat-card-title>Historia Clínica</mat-card-title>
+    <mat-card-content>
+      <p><strong>Altura:</strong> {{ selectedHistoriaClinica.altura }}</p>
+      <p><strong>Diagnóstico:</strong> {{ selectedHistoriaClinica.diagnostico }}</p>
+      <p><strong>Tratamiento:</strong> {{ selectedHistoriaClinica.tratamiento }}</p>
+      <!-- Añade más campos según los datos disponibles en la historia clínica -->
+    </mat-card-content>
+  </mat-card>
+</div>
+
+    <div *ngIf="pacienteSeleccionado" class="paciente-detalle">
+      <h3>Detalles del Paciente: {{ pacienteSeleccionado.nombre }} {{ pacienteSeleccionado.apellido }}</h3>
+      <p>Email: {{ pacienteSeleccionado.mail }}</p>
+      <h4>Turnos:</h4>
+      <ul>
+        <li *ngFor="let turno of turnosPacienteSeleccionado">
+          {{ turno.fecha }} - {{ turno.hora }} - {{ turno.estado }}
+          <button (click)="verHistoriaClinica3(pacienteSeleccionado.id)">Ver Historia Clínica</button>
+          <!-- <button (click)="verReseña(turno.id)">Ver Reseña</button> -->
+        </li>
+      </ul>
     </div>
   </div>
-
-  <div class="center-button">
-    <input type="button" [value]="btnVolver" class="btn-success" (click)="onClickHome($event)"/>
-  </div>
+  <!-- </div>
   
   <ng-template #noEspecialista>
-    <p>No tienes permisos para ver esta sección.</p>
+    <p>No tienes pacientes para ver esta sección.</p>
   </ng-template>
+</div> -->
+<!-- </div> -->
+
+<div class="center-button">
+  <input type="button" [value]="btnVolver" class="btn-success" (click)="onClickHome($event)"/>
 </div>
+
+</body>

@@ -142,7 +142,7 @@
                 <div class="row g-3">
                   <div class="col-sm-6">
                 <label for="especialidad">Especialidad</label>
-                <select id="especialidad" formControlName="especialidad" required>
+                <select id="especialidad" formControlName="especialidad" required (change)="onEspecialidadChange($event)">
                   <option value="Ginecología">Ginecología</option>
                   <option value="Cardiología">Cardiología</option>
                   <option value="Kinesiología">Kinesiología</option>
@@ -164,12 +164,21 @@
                 </div>
                 </div>
   
-               <div class="form-group" *ngIf="formReg.get('especialidad')?.value === 'otra' && formReg.get('selectedRole')?.value === 'especialista'">
+               <!-- <div class="form-group" *ngIf="formReg.get('especialidad')?.value === 'otra' && formReg.get('selectedRole')?.value === 'especialista'">
                 <label for="otraEspecialidad">Otra Especialidad</label>
                 <input type="text" id="otraEspecialidad" formControlName="otraEspecialidad" minlength="4" maxlength="25" placeholder="Especialidad personalizada" lettersOnly required          
                 [class.campo-con-error]="getValue('otraEspecialidad').invalid && (getValue('otraEspecialidad').touched || getValue('otraEspecialidad').dirty)">
                 <div class="errorMessage" *ngIf=" getValue('otraEspecialidad').invalid && (getValue('otraEspecialidad').touched || getValue('otraEspecialidad').dirty)">
                   Valido solo caracteres alfabéticos.
+                </div>
+              </div> -->
+              
+              <div class="form-group" *ngIf="showOtraEspecialidad && formReg.get('selectedRole')?.value === 'especialista'">
+                <label for="otraEspecialidad">Otra Especialidad</label>
+                <input type="text" id="otraEspecialidad" formControlName="otraEspecialidad" minlength="4" maxlength="25" placeholder="Especialidad personalizada" lettersOnly required          
+                [class.campo-con-error]="getValue('otraEspecialidad').invalid && (getValue('otraEspecialidad').touched || getValue('otraEspecialidad').dirty)">
+                <div class="errorMessage" *ngIf="getValue('otraEspecialidad').invalid && (getValue('otraEspecialidad').touched || getValue('otraEspecialidad').dirty)">
+                  Válido solo caracteres alfabéticos.
                 </div>
               </div>
             </div>

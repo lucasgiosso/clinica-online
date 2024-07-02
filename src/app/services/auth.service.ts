@@ -1,9 +1,9 @@
 import { Injectable } from '@angular/core';
-import { Auth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut,  User, fetchSignInMethodsForEmail } from '@angular/fire/auth';
-import { Firestore, collection, getDoc, doc, updateDoc, query, getDocs, QuerySnapshot, where, collectionData } from '@angular/fire/firestore';
+import { Auth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut,  User, fetchSignInMethodsForEmail, authState } from '@angular/fire/auth';
+import { Firestore, collection, getDoc, doc, updateDoc, query, getDocs, QuerySnapshot, where, collectionData, docData } from '@angular/fire/firestore';
 import { UserCredential, onAuthStateChanged, sendEmailVerification } from '@angular/fire/auth';
 import { DataService } from './data.service';
-import { BehaviorSubject, Observable, from, map, switchMap } from 'rxjs';
+import { BehaviorSubject, Observable, Subject, from, map, switchMap } from 'rxjs';
 import { Paciente } from './turnos.service';
 
 
@@ -17,6 +17,8 @@ export class AuthService {
     localStorage.getItem('userRole')
   );
   userRole$ = this.userRoleSubject.asObservable();
+  private logoutSubject = new Subject<void>();
+  logout$ = this.logoutSubject.asObservable();
   
   constructor(private auth: Auth, private dataService:DataService, private firestore: Firestore) { 
     
@@ -81,22 +83,76 @@ getRole(): string {
   return this.userData.userRole;
 }
 
-logout() 
+async logout() 
 {
+  await this.auth.signOut();
+  this.logoutSubject.next();
   return signOut(this.auth);
 }  
 
+// getCurrentUser(): Observable<User | null> {
+//   return new Observable((observer) => {
+//     const unsubscribe = this.auth.onAuthStateChanged((user: User | null) => {
+//       observer.next(user);
+//     });
+//     return () => {
+//       unsubscribe();
+//     };
+//   });
+// }
+
 getCurrentUser(): Observable<User | null> {
+  return authState(this.auth);
+}
+
+getUserData(uid: string): Observable<any | null> {
+  const userDoc = doc(this.firestore, `DatosUsuarios/${uid}`);
   return new Observable((observer) => {
-    const unsubscribe = this.auth.onAuthStateChanged((user: User | null) => {
-      observer.next(user);
+    getDoc(userDoc).then((docSnapshot) => {
+      if (docSnapshot.exists()) {
+        observer.next(docSnapshot.data());
+      } else {
+        observer.next(null);
+      }
+    }).catch((error) => {
+      observer.error(error);
     });
-    return () => {
-      unsubscribe();
-    };
   });
 }
 
+getCurrentUserId(email: string): Observable<string | null> {
+  const usersCollection = collection(this.firestore, 'DatosUsuarios');
+  const q = query(usersCollection, where('mail', '==', email));
+  return from(getDocs(q)).pipe(
+    map(querySnapshot => {
+      console.log('Query Snapshot:', querySnapshot); // Log para verificar los datos obtenidos
+      if (!querySnapshot.empty) {
+        const userId = querySnapshot.docs[0].id;
+        console.log('User ID:', userId); // Log para verificar el ID del usuario
+        return userId;  // Asumimos que el email es único y solo un documento será devuelto.
+      } else {
+        console.log('No user found with email:', email); // Log para verificar cuando no se encuentra un usuario
+        return null;
+      }
+    })
+  );
+}
+
+getCurrentUserEmail(userId: string): Observable<string | null> {
+  const userDoc = doc(this.firestore, `DatosUsuarios/${userId}`);
+  return from(getDoc(userDoc)).pipe(
+    map(docSnapshot => {
+      if (docSnapshot.exists()) {
+        const userData = docSnapshot.data();
+        console.log('User Data:', userData); // Log para verificar los datos del usuario
+        return userData ? userData['mail'] : null; // Asegúrate de que 'mail' es el campo correcto
+      } else {
+        console.log('No user data found for user ID:', userId); // Log para cuando no se encuentra el documento
+        return null;
+      }
+    })
+  );
+}
 
 
 obtenerPacientes(): Observable<Paciente[]> {

@@ -15,8 +15,10 @@
     </div>
   </div>
   
-
-    <div class="user-container" [ngClass]="{ 'swirl-out-bck': animate }">
+<div>
+  
+</div>
+    <div class="user-container" [ngClass]="{ 'swirl-out-bck': animate }" *ngIf="!showLoading" [ngClass]="{'slide-in-top': animate1}">
   
     <div class="user-profile" *ngIf="usuarioLogueado">
       <label class="perfil">Mi perfil</label>
@@ -65,14 +67,18 @@
     </ng-container>
 
     <ng-container *ngIf="!isEspecialista">
-    <div class="user-profile" *ngIf="usuarioLogueado">
-      <div class="historia-clinica">
-        <ng-container *ngIf="historiaClinica$ | async as historiasClinicas; else noHistoriaClinica">
-          <h2>Historia Clínica</h2>
-          <div *ngFor="let historia of historiasClinicas">
-            <!-- <div>
-              <strong>Fecha:</strong> {{ historia.fecha | date }}
-            </div> -->
+      <div class="user-profile" *ngIf="usuarioLogueado ">
+        <h2>Historia Clínica</h2>
+        <div class="historia-clinica">
+          <ng-container *ngIf="historiaClinica$ | async as historiasClinicas; else noHistoriaClinica">
+            
+            <div class="table-scroll"> 
+
+            <div *ngFor="let historia of historiasClinicas; let i = index">
+              <hr *ngIf="i > 0" class="separator">
+            <div *ngIf="historia.fecha">
+              <p><strong>Fecha:</strong> {{ historia.fecha | date:'dd-MM-yyyy' }}</p>
+            </div>
             <div>
               <p><strong>Altura:</strong> {{ historia.altura }} cm</p>
             </div>
@@ -88,9 +94,10 @@
             <div *ngFor="let dato of historia.datosDinamicos">
               <p><strong>{{ dato.clave }}:</strong> {{ dato.valor }}</p>
             </div>
-            <button class="btn-export" (click)="generarPDF()">Descargar Historia Clínica en PDF</button>
           </div>
-          
+        </div>
+            <button class="btn-export" (click)="generarPDF()">Descargar Historia Clínica en PDF</button>
+            <button class="btn-export" (click)="generarPDFPorProfesional()">Descargar Atenciones por Profesional</button>
         </ng-container>
         <ng-template #noHistoriaClinica>
           <p>No se encontró historia clínica para este paciente.</p>
@@ -99,8 +106,7 @@
     </div>
   </ng-container>
   </div>
-  </body>
-  
+
   <div class="center-button">
     <input type="button" [value]="btnVolver" class="btn-success" [ngClass]="{ 'swirl-out-bck': animate }" (click)="onClickHome($event)" />
   </div>
@@ -109,4 +115,8 @@
       <p>&copy; 2024 Clinica Online. Todos los derechos reservados.</p>
     </div>
   </footer>
+
+  </body>
+  
+
   

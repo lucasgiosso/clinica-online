@@ -8,7 +8,7 @@ import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 import { Router } from '@angular/router';
 import { HistoriaClinicaService } from '../../../services/historia-clinica.service';
-import { HistoriaClinica } from '../../../services/turnos.service';
+import { HistoriaClinica, TurnosService } from '../../../services/turnos.service';
 import { HistoriaClinicaModalComponent } from '../../../historia-clinica-modal/historia-clinica-modal.component';
 import { MatDialog } from '@angular/material/dialog';
 import { PacienteService } from '../../../services/paciente.service';
@@ -29,7 +29,7 @@ export class ListaUsuariosComponent implements OnInit{
   selectedPacienteId: string | null = null;
   historiasClinicasExist: { [key: string]: boolean } = {};
 
-  constructor(private authService: AuthService, private router: Router, private historiaClinicaService: HistoriaClinicaService, private dialog: MatDialog, private pacienteService: PacienteService){
+  constructor(private authService: AuthService, private router: Router, private historiaClinicaService: HistoriaClinicaService, private dialog: MatDialog, private pacienteService: PacienteService, private turnosService: TurnosService){
 
   }
 
@@ -133,5 +133,61 @@ export class ListaUsuariosComponent implements OnInit{
       });
     });
   }
+
+  getUserImage(usuario: any): string {
+    if (usuario.role === 'paciente') {
+      return usuario.imagenPerfil1;
+    }
+    return usuario.imagenPerfil;
+  }
+
+  descargarTurnos(usuario: any) {
+
+    const userEmail = usuario.mail;
+    const userRole = usuario.role;
+
+    console.log('mail:',  usuario.mail)
+    console.log('role:',  usuario.role)
+
+    if (!usuario.mail) {
+      console.error('El correo electrónico del usuario es indefinido.');
+      return;
+    }
+        
+    this.turnosService.obtenerTurnosPorUsuario(userEmail, userRole).subscribe(turnos => {
+      if (turnos.length === 0) {
+        Swal.fire({
+          icon: 'info',
+          title: 'No Turnos',
+          text: 'Este usuario no tiene turnos.',
+        });
+        return;
+      }
+
+      const formattedTurnos = turnos.map(turno => ({
+        // id: turno.id,
+        //especialistaId: turno.especialistaId,
+        especialista: turno.especialista.nombre + turno.especialista.apellido || 'Desconocido',
+        paciente: turno.paciente.nombre + turno.paciente.apellido || 'Desconocido',
+        especialidad: turno.especialidad || 'Desconocido',
+        horaInicio: turno.horaInicio || 'Desconocida',
+        horaFin: turno.horaFin || 'Desconocida',
+        estado: turno.estado || 'Desconocido',
+        fechaHora: turno.fechaHora ||  'Desconocida',
+        ocupado: turno.ocupado ? 'VERDADERO' : 'FALSO'
+      }));
+  
+      const worksheet: XLSX.WorkSheet = XLSX.utils.json_to_sheet(formattedTurnos);
+      const workbook: XLSX.WorkBook = {
+        Sheets: { 'Turnos': worksheet },
+        SheetNames: ['Turnos']
+      };
+      const excelBuffer: any = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+      this.saveAsExcelFile(excelBuffer, `${usuario.nombre}_turnos`);
+    }, error => {
+      console.error('Error al obtener turnos del usuario:', error);
+    });
+  }
+    
 }
 

@@ -5,6 +5,7 @@ import { FormArray, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Va
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { PacienteService } from '../services/paciente.service';
+import { Firestore, doc, updateDoc } from '@angular/fire/firestore';
 
 @Component({
   selector: 'app-historia-clinica',
@@ -25,13 +26,14 @@ export class HistoriaClinicaComponent implements OnInit{
   btnVolver = 'Volver';
   maxDatosDinamicos = 3;
   animateForm = false;
+  fechaTurno!: Date;
   
-  constructor(private historiaClinicaService: HistoriaClinicaService, private route: ActivatedRoute, private fb: FormBuilder, private router: Router, private pacienteService: PacienteService)
+  constructor(private historiaClinicaService: HistoriaClinicaService, private route: ActivatedRoute, private fb: FormBuilder, private router: Router, private pacienteService: PacienteService, private firestore: Firestore)
   {
     this.historiaClinicaForm = this.fb.group({
       altura: ['', Validators.required],
       peso: ['', Validators.required],
-      temperatura: ['', [Validators.required, Validators.max(127), Validators.min(34)]],
+      temperatura: ['', [Validators.required]],
       presion: ['', Validators.required],
       datosDinamicos: this.fb.array([])
     });
@@ -41,6 +43,8 @@ export class HistoriaClinicaComponent implements OnInit{
     this.route.paramMap.subscribe(params => {
       this.turnoId = params.get('turnoId') || '';
       this.pacienteId = params.get('pacienteId') || '';
+      const fechaTurnoParam = this.route.snapshot.paramMap.get('fechaTurno')!;
+      this.fechaTurno = new Date(fechaTurnoParam);
 
       this.pacienteService.getPacienteInfo1(this.pacienteId).subscribe(paciente => {
         this.pacienteNombre = paciente.nombre;
@@ -67,9 +71,12 @@ export class HistoriaClinicaComponent implements OnInit{
       const formValues = this.historiaClinicaForm.value;
       this.animateForm = true;
       setTimeout(() => {
-      this.historiaClinicaService.addMedicalHistory(this.pacienteId, this.turnoId, formValues).then(() => {
+      const fechaTurno = this.fechaTurno;
+      this.historiaClinicaService.addMedicalHistory(this.pacienteId, this.turnoId, formValues, fechaTurno).then(() => {
         this.historiaClinicaForm.reset();
         this.router.navigate(['/home/mis-turnos']);
+        const turnoDocRef = doc(this.firestore, `turnos/${this.turnoId}`);
+        updateDoc(turnoDocRef, { historiaClinicaCargada: true });
       }).catch(error => {
         console.error('Error al guardar la historia clínica:', error);
       });

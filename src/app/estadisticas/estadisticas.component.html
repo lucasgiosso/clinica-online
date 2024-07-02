@@ -1,0 +1,221 @@
+
+<body>
+    <app-loading *ngIf="showLoading" class="centered-loading"></app-loading>
+    <div *ngIf="!showLoading" [ngClass]="{'bounce-in-top': animate}" class="container">
+        <header>
+            <h1>Informes de la Clínica</h1>
+        </header>
+
+        <section class="report-section">
+            <h2 >Log de ingresos al sistema</h2>
+            <div class="chart-button-container">
+                <div class="chart-container">
+                <canvas baseChart
+                [data]="pieChartData"
+                [options]="pieChartOptions"
+                [type]="pieChartType"
+                [plugins]="pieChartPlugins">
+                </canvas>
+            </div>
+                <div class="button-container">
+                    <input type="button" value="Descargar Excel" class="btn-user" (click)="exportToExcel()"/>
+                    <input type="button" value="Descargar PDF" class="btn-user" (click)="generarPDF()"/>
+                  </div>
+              </div>
+
+              <div class="table-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Usuario</th>
+                    <th>Día</th>
+                    <th>Horario</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let log of logIngresos">
+                    <td>{{ log.Usuario }}</td>
+                    <td>{{ log.Fecha }}</td>
+                    <td>{{ log.Hora }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+        </section>
+
+        <section class="report-section">
+            <h2>Cantidad de turnos por especialidad</h2>
+            <div class="chart-button-container">
+            <div class="chart-container">
+                <canvas baseChart
+                    [data]="pieChartDataXEspecialidad"
+                    [options]="pieChartOptionsXEspecialidad"
+                    [type]="pieChartTypeXEspecialidad"
+                    [plugins]="pieChartPluginsXEspecialidad">
+                </canvas>
+            </div>
+                <div class="button-container">
+                  <input type="button" value="Exportar a Excel" class="btn-user" (click)="exportToExcelTurnoXEspecialidad()" />
+                  <input type="button" value="Generar PDF" class="btn-user" (click)="generarPDFTurnoXEspecialidad()" />
+                </div>
+        </div>
+
+                <div class="table-scroll">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Especialidad</th>
+                        <th>Cantidad de Turnos</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let especialidad of turnosPorEspecialidad | keyvalue">
+                        <td>{{ especialidad.key }}</td>
+                        <td>{{ especialidad.value }}</td>
+                      </tr>
+                </tbody>
+            </table>
+        </div>
+        </section>
+
+        <section class="report-section">
+            <h2>Cantidad de turnos por día</h2>
+            <div class="chart-button-container">
+                <div class="chart-container">
+                <canvas baseChart
+                [data]="pieChartDataXDia"
+                [options]="pieChartOptionsXDia"
+                [type]="pieChartTypeXDia"
+                [plugins]="pieChartPluginsXDia">
+                </canvas>
+            </div>
+                <div class="button-container">
+                    <input type="button" value="Descargar Excel" class="btn-user" (click)="exportToExcelXDia()"/>
+                    <input type="button" value="Descargar PDF" class="btn-user" (click)="generarPDFXDia()"/>
+                  </div>
+              </div>
+              <div class="table-scroll">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Cantidad de Turnos</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let turno of turnosPorDia | keyvalue">
+                        <td>{{ turno.key }}</td>
+                        <td>{{ turno.value }}</td>
+                      </tr>
+                </tbody>
+            </table>
+        </div>
+        </section>
+
+        <section class="report-section">
+            <h2>Cantidad de turnos solicitados por médico en un lapso de tiempo</h2>
+
+            <div class="form-container">
+                <div class="date-picker">
+                  <label for="fechaInicio">Fecha Inicio</label>
+                  <input id="fechaInicio" type="date" appResaltar [(ngModel)]="fechaInicioS" [max]="fechaFinS" required>
+                </div>
+                <div class="date-picker">
+                  <label for="fechaFin">Fecha Fin</label>
+                  <input id="fechaFin" type="date" appResaltar [(ngModel)]="fechaFinS" [min]="fechaInicioS" required>
+                </div>
+                <div class="button-container-buscar">
+                <button (click)="fetchTurnosSolicitadosPorMedicosXFecha(fechaInicioS, fechaFinS)" class="btn btn-primary">Buscar</button>
+              </div>
+            </div>             
+
+              
+            <div class="chart-button-container">
+                <div class="chart-container">
+                <canvas baseChart
+                        [data]="pieChartDataXSolicitado"
+                        [options]="pieChartOptionsXSolicitado"
+                        [type]="pieChartTypeXSolicitado"
+                        [plugins]="pieChartPluginsXSolicitado">
+                </canvas>
+            </div>
+                <div class="button-container">
+                    <input type="button" value="Descargar Excel" class="btn-user" (click)="exportToExcelXSolicitado()" [disabled]="!turnosSolicitadosPorMedico || turnosSolicitadosPorMedico.length === 0" />
+                    <input type="button" value="Descargar PDF" class="btn-user" (click)="generarPDFXSolicitado()" [disabled]="!turnosSolicitadosPorMedico || turnosSolicitadosPorMedico.length === 0" />
+                  </div>
+              </div>
+
+              <div class="table-scroll">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Médico</th>
+                        <th>Cantidad de Turnos</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let medico of turnosSolicitadosPorMedico">
+                        <td>{{ medico.nombre }}</td>
+                        <td>{{ medico.cantidad  }}</td>
+                      </tr>
+                </tbody>
+            </table>
+        </div>
+        </section>
+
+        <section class="report-section">
+            <h2>Cantidad de turnos finalizados por médico en un lapso de tiempo</h2>
+
+            <div class="form-container">
+                <div class="date-picker">
+                  <label for="fechaInicio">Fecha Inicio</label>
+                  <input id="fechaInicio" type="date" appFocus appResaltar [(ngModel)]="fechaInicioF" [max]="fechaFinF" required>
+                </div>
+                <div class="date-picker">
+                  <label for="fechaFin">Fecha Fin</label>
+                  <input id="fechaFin" type="date" appFocus appResaltar [(ngModel)]="fechaFinF" [min]="fechaInicioF" required>
+                </div>
+                <div class="button-container-buscar">
+                <button (click)="fetchTurnosFinalizadosPorMedicosXFecha(fechaInicioF, fechaFinF)" class="btn btn-primary">Buscar</button>
+                </div>
+              </div>
+
+              <div class="chart-button-container">
+                <div class="chart-container">
+                <canvas baseChart
+                        [data]="pieChartDataXFinalizado"
+                        [options]="pieChartOptionsXFinalizado"
+                        [type]="pieChartTypeXFinalizado"
+                        [plugins]="pieChartPluginsXFinalizado">
+                </canvas>
+            </div>
+                <div class="button-container">
+                    <input type="button" value="Descargar Excel" class="btn-user" (click)="exportToExcelXFinalizado()" [disabled]="!turnosFinalizadosPorMedico || turnosFinalizadosPorMedico.length === 0" />
+                    <input type="button" value="Descargar PDF" class="btn-user" (click)="generarPDFXFinalizado()" [disabled]="!turnosFinalizadosPorMedico || turnosFinalizadosPorMedico.length === 0" />
+                  </div>
+              </div>
+
+              <div class="table-scroll">
+              <table>
+                <thead>
+                    <tr>
+                        <th>Médico</th>
+                        <th>Cantidad de Turnos</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let medico of turnosFinalizadosPorMedico">
+                        <td>{{ medico.nombre }}</td>
+                        <td>{{ medico.cantidad  }}</td>
+                      </tr>
+                </tbody>
+            </table>
+        </div>
+        </section>
+
+        <div class="center-button">
+            <input type="button" [value]="btnVolver" class="btn-success" (click)="onClickHome($event)"/>
+        </div>
+          
+    </div>
+</body>

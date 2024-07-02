@@ -37,7 +37,7 @@
         <input type="text" class="form-control input-styling" placeholder="Buscar..." [(ngModel)]="filtro">
       </div>
     </div> 
-
+    <div class="table-scroll">
      <div class="table-responsive" *ngIf="turnosFiltrados.length > 0; else noTurnos">
       <table class="table table-bordered">
         <thead>
@@ -85,6 +85,7 @@
         </tbody>
       </table>
     </div>
+  </div>
     <ng-template #noTurnos>
       <p>No hay turnos disponibles</p>
     </ng-template>

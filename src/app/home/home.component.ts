@@ -152,4 +152,9 @@ onClickConfig(event: any): void
   {
     this.router.navigate(['home/seccion-pacientes']);
   }
+  
+  estadisticas()
+  {
+    this.router.navigate(['estadisticas']);
+  }
 }
